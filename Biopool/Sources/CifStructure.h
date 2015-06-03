@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   CifStructure.h
  * Author: marco
  *
@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 #include <istream>
-#include <vector>
 
 using std::string;
 using std::istream;

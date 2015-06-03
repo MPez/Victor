@@ -20,11 +20,13 @@
 // Includes:
 #include <string.h>
 #include <utility>
+
 #include <Loader.h>
 #include <AminoAcid.h>
 #include <Spacer.h>
 #include <LigandSet.h>
 #include <Protein.h>
+
 #include "CifStructure.h"
 
 
@@ -40,7 +42,6 @@ namespace Victor {
         public:
 
             // CONSTRUCTORS/DESTRUCTOR:
-
             /**
              * Constructor.
              * @param _input = the CIF file object
@@ -69,82 +70,35 @@ namespace Victor {
 
             // PREDICATES:
 
-            bool isValid() {
-                return valid;
-            }
+            bool isValid();
             void checkModel(); //to check input values ​​
             void checkAndSetChain(); //chosen by the user
             unsigned int getMaxModels();
-            unsigned int getMaxModelsFast();
             vector<char> getAllChains();
-
 
             // MODIFIERS:
 
-            void setPermissive() {
-                permissive = true;
-            }
-
-            void setNonPermissive() {
-                permissive = false;
-            }
-
-            void setVerbose() {
-                verbose = true;
-            }
-
-            void setNoVerbose() {
-                verbose = false;
-            }
-
-            void setChain(char _ch) {
-                chain = _ch;
-            }
-
-            void setModel(unsigned int _mod) {
-                model = _mod;
-            }
-
-            void setAltAtom(char _a) {
-                altAtom = _a;
-            }
-
-            void setNoHAtoms() {
-                noHAtoms = true;
-            }
-
-            void setNoHetAtoms() {
-                noHetAtoms = true;
-            }
+            void setPermissive();
+            void setNonPermissive();
+            void setVerbose();
+            void setNoVerbose();
+            void setChain(char _ch);
+            void setModel(unsigned int _mod);
+            void setAltAtom(char _a);
+            void setNoHAtoms();
+            void setNoHetAtoms();
             void setOnlyMetalHetAtoms();
-
-            void setNoSecondary() {
-                noSecondary = true;
-            }
-
-            void setWithSecondary() {
-                noSecondary = false;
-            }
-
-            void setNoConnection() {
-                noConnection = true;
-            }
-
-            void setWithConnection() {
-                noConnection = false;
-            }
-
+            void setNoSecondary();
+            void setWithSecondary();
+            void setNoConnection();
+            void setWithConnection();
             void setWater();
-
-            void setAllChains() {
-                allChains = true;
-            }
+            void setAllChains();
 
             //virtual void loadSpacer(Spacer& sp);
             //virtual void loadLigandSet(LigandSet& l);
+
             virtual void loadProtein(Protein& prot);
-
-
 
             //virtual void loadNucleotideChainSet(NucleotideChainSet& ns); //new class, new code by Damiano
 
@@ -152,9 +106,8 @@ namespace Victor {
             // HELPERS:
             bool setBonds(Spacer& sp);
             bool inSideChain(const AminoAcid& aa, const Atom& at);
-            void loadSecondary();
             void assignSecondary(Spacer& sp);
-            int parseCIFline(string atomLine, Ligand* lig, AminoAcid* aa);
+            int parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa);
 
             // ATTRIBUTES 
         private:
@@ -172,7 +125,6 @@ namespace Victor {
             char chain; // chain ID to be loaded
             unsigned int model; // model number to be loaded
             char altAtom; // ID of alternate atoms to be loaded
-
             bool noNucleotideChains; // does not load nucleotide atoms
 
             string helixCode; // parallel vector of helix data, chain name for each helixData element
@@ -184,7 +136,82 @@ namespace Victor {
             CifStructure cif;
         };
 
+        inline
+        bool CifLoader::isValid() {
+            return valid;
+        }
+
+        inline
+        void CifLoader::setPermissive() {
+            permissive = true;
+        }
+
+        inline
+        void CifLoader::setNonPermissive() {
+            permissive = false;
+        }
+
+        inline
+        void CifLoader::setVerbose() {
+            verbose = true;
+        }
+
+        inline
+        void CifLoader::setNoVerbose() {
+            verbose = false;
+        }
+
+        inline
+        void CifLoader::setChain(char _ch) {
+            chain = _ch;
+        }
+
+        inline
+        void CifLoader::setModel(unsigned int _mod) {
+            model = _mod;
+        }
+
+        inline
+        void CifLoader::setAltAtom(char _a) {
+            altAtom = _a;
+        }
+
+        inline
+        void CifLoader::setNoHAtoms() {
+            noHAtoms = true;
+        }
+
+        inline
+        void CifLoader::setNoHetAtoms() {
+            noHetAtoms = true;
+        }
+
+        inline
+        void CifLoader::setNoSecondary() {
+            noSecondary = true;
+        }
+
+        inline
+        void CifLoader::setWithSecondary() {
+            noSecondary = false;
+        }
+
+        inline
+        void CifLoader::setNoConnection() {
+            noConnection = true;
+        }
+
+        inline
+        void CifLoader::setWithConnection() {
+            noConnection = false;
+        }
+
+        inline
+        void CifLoader::setAllChains() {
+            allChains = true;
+        }
+
     }
 } //namespace
-#endif //_PDB_LOADER_H_
+#endif //_CIF_LOADER_H_
 

@@ -148,7 +148,7 @@ namespace Victor { namespace Biopool {
 
         //virtual void loadSpacer(Spacer& sp);
         //virtual void loadLigandSet(LigandSet& l);
-        virtual void loadProtatein(Protein& prot);
+        virtual void loadProtein(Protein& prot);
 
 
 

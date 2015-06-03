@@ -1,32 +1,33 @@
- /*  This file is part of Victor.
+/*  This file is part of Victor.
 
-    Victor is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   Victor is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    Victor is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   Victor is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Victor.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with Victor.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 // Includes:
-#include <CifLoader.h>
+#include <regex>
+#include <string>
+
 #include <IoTools.h>
 #include <vector3.h>
 #include <AtomCode.h>
-#include <AminoAcid.h>
 #include <String2Number.h>
 #include <Ligand.h>
 #include <Nucleotide.h>
 #include <AminoAcidHydrogen.h>
-#include <regex>
-#include <string>
+
+#include "CifLoader.h"
 
 // Global constants, typedefs, etc. (to avoid):
 
@@ -40,47 +41,32 @@ CifLoader::CifLoader(istream& _input = cin, bool _permissive = false,
         bool _noHAtoms = false, bool _noHetAtoms = false, bool _noSecondary = false,
         bool _noConnection = false, bool _noWater = true, bool _verb = true,
         bool _allChains = false, string _NULL = "", bool _onlyMetal = false,
-        bool _noNucleotideChains = true) : 
-        input(_input), permissive(_permissive), valid(true), noHAtoms(_noHAtoms),
-        noHetAtoms(_noHetAtoms), noSecondary(_noSecondary), noConnection(_noConnection),
-        noWater(_noWater), verbose(_verb), allChains(_allChains), chain(' '),
-        model(999), altAtom('A'), helixCode(_NULL),
-        //sheetCode(_NULL), helixData(), sheetData(), onlyMetalHetAtoms(_onlyMetal), 
-        sheetCode(_NULL), onlyMetalHetAtoms(_onlyMetal), noNucleotideChains(_noNucleotideChains) {
+        bool _noNucleotideChains = true) :
+input(_input), permissive(_permissive), valid(true), noHAtoms(_noHAtoms),
+noHetAtoms(_noHetAtoms), noSecondary(_noSecondary), noConnection(_noConnection),
+noWater(_noWater), verbose(_verb), allChains(_allChains), chain(' '),
+model(999), altAtom('A'), helixCode(_NULL),
+//sheetCode(_NULL), helixData(), sheetData(), onlyMetalHetAtoms(_onlyMetal), 
+sheetCode(_NULL), onlyMetalHetAtoms(_onlyMetal), noNucleotideChains(_noNucleotideChains) {
     cif = new CifStructure(input);
 }
 
 CifLoader::~CifLoader() {
-    PRINT_NAME;        
+    PRINT_NAME;
 }
 
 // PREDICATES:
 
 /**
- * Reads in the maximum allowed number of NMR models, zero otherwise.
- * @param void
+ * If user selected a Model, it check validity of this choice,
+ * otherwise it select first available chain.
+ * @param   void
+ * @return  void
  */
-unsigned int CifLoader::getMaxModels() {
-    input.clear(); // reset file error flags
-    input.seekg(0);
-
-    string atomLine = readLine(input);
-    
-    unsigned int max = 0;
-    
-    // search column's number of the model field in the atom group
-    cif.parseGroup("atom", atomLine);
-    int col = cif.getGroupColumnNumber("atom", "model");
-
-    if (col != 0) {
-        while (input) {
-            if (atomLine.substr(0,4) == "ATOM") {
-                max = stoiDEF(cif.getGroupField("atom", atomLine, col));
-            }
-            atomLine = readLine(input);
-        }
+void CifLoader::checkModel() {
+    if ((model != 999) && (model > getMaxModels())) {
+        ERROR("Please check model number", exception);
     }
-    return max;
 }
 
 /**
@@ -91,7 +77,7 @@ unsigned int CifLoader::getMaxModels() {
  */
 void CifLoader::checkAndSetChain() {
     vector<char> chainList = getAllChains();
-    
+
     if (chain != ' ') {
         bool validChain = false;
         for (unsigned int i = 0; i < chainList.size(); i++)
@@ -108,34 +94,47 @@ void CifLoader::checkAndSetChain() {
 }
 
 /**
- * If user selected a Model, it check validity of this choice,
- * otherwise it select first available chain.
- * @param   void
- * @return  void
+ * Reads in the maximum allowed number of NMR models, zero otherwise.
+ * @param void
  */
-void CifLoader::checkModel() {
-    if ((model != 999) && (model > getMaxModels())) {
-        ERROR("Please check model number", exception);
+unsigned int CifLoader::getMaxModels() {
+    input.clear(); // reset file error flags
+    input.seekg(0);
+
+    string atomLine = readLine(input);
+
+    unsigned int max = 0;
+
+    // search column's number of the model field in the atom group
+    cif.parseGroup("atom", atomLine);
+    int col = cif.getGroupColumnNumber("atom", "model");
+
+    if (col != 0) {
+        while (input) {
+            if (atomLine.substr(0, 4) == "ATOM") {
+                max = stoiDEF(cif.getGroupField("atom", atomLine, col));
+            }
+            atomLine = readLine(input);
+        }
     }
+    return max;
 }
 
 /**
  * Returns all available chain IDs for a PDB file.
- *    
- * @param   void
- * @return  vector of chars
+ * @return  all available chain IDs
  */
 vector<char> CifLoader::getAllChains() {
     vector<char> res;
     char lastChain = ' ';
-    
+
     input.clear(); // reset file error flags
     input.seekg(0);
-    
+
     string atomLine = readLine(input);
-    
+
     unsigned int modelNum = 0;
-    
+
     cif.parseGroup("atom", atomLine);
     int modelCol = cif.getGroupColumnNumber("atom", "model");
     int chainCol = cif.getGroupColumnNumber("atom", "chain");
@@ -157,6 +156,21 @@ vector<char> CifLoader::getAllChains() {
         atomLine = readLine(input);
     }
     return res;
+}
+
+void CifLoader::setOnlyMetalHetAtoms() {
+    if (noHetAtoms) {
+        ERROR("can't load metal ions if hetAtoms option is disabled", exception);
+    }
+    onlyMetalHetAtoms = true;
+    noWater = true;
+}
+
+void CifLoader::setWater() {
+    if (noHetAtoms || onlyMetalHetAtoms) {
+        ERROR("can't load water if hetAtoms option is disabled\nor onlyMetalHetAtoms is enabled", exception);
+    }
+    noWater = false;
 }
 
 // HELPERS
@@ -193,7 +207,6 @@ bool CifLoader::inSideChain(const AminoAcid& aa, const Atom& at) {
     return true; // rest of aminoacid is its sidechain
 }
 
-
 /**
  * Try to assigns the secondary structure from the PDB header. If not present
  * uses Spacer's setStateFromTorsionAngles().
@@ -226,23 +239,6 @@ void CifLoader::assignSecondary(Spacer& sp) {
             }
 }
 
-//setOnlyMetalHetAtoms
-void CifLoader::setOnlyMetalHetAtoms() {
-    if (noHetAtoms) {
-        ERROR("can't load metal ions if hetAtoms option is disabled", exception);
-    }
-    onlyMetalHetAtoms = true;
-    noWater = true;
-}
-
-//setWater
-void CifLoader::setWater() {
-    if (noHetAtoms || onlyMetalHetAtoms) {
-        ERROR("can't load water if hetAtoms option is disabled\nor onlyMetalHetAtoms is enabled", exception);
-    }
-    noWater = false;
-}
-
 /*
 void 
 CifLoader::loadSpacer(Spacer& sp){
@@ -251,6 +247,109 @@ CifLoader::loadSpacer(Spacer& sp){
     sp = prot.getSpacer(0);    
 }
  */
+
+/**
+ * Parse a single line of a CIF file.
+ * @param atomLine the whole CIF line as it is
+ * @param tag the first field (keyword) in a PDB line
+ * @param lig pointer to a ligan
+ * @param aa pointer to an amino acid
+ * @return Residue number read from the PDB line.
+ */
+int
+CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa) {
+    // get atom id
+    int atNum = stoiDEF(cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "atom id")));
+    // get residue number
+    int aaNum = stoiDEF(cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "residue num")));
+    char altAaID = cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "alt id")).c_str()[0]; // "Code for insertion of residues"
+
+    // get x, y, z coordinates
+    vgVector3<double> coord;
+    coord.x = stodDEF(cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "x")));
+    coord.y = stodDEF(cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "y")));
+    coord.z = stodDEF(cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "z")));
+
+    // get b-factor
+    double bfac = 0.0;
+    int colBfac = cif.getGroupColumnNumber("atom", "bfac");
+    if (colBfac != -1) {
+        string sbfac = cif.getGroupField("atom", atomLine, colBfac);
+        if (sbfac != "?" || sbfac != ".") {
+            bfac = stodDEF(sbfac);
+        }
+    }
+
+    // get atom name
+    string atType = cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "atom name"));
+
+    // get residue name
+    string aaType = cif.getGroupField("atom", atomLine,
+            cif.getGroupColumnNumber("atom", "residue name"));
+
+    // take care of deuterium atoms
+    if (atType == "D") {
+        cerr << "--> " << atType << "\n";
+        atType = "H";
+    }
+
+    // Initialize the Atom object
+    Atom* at = new Atom();
+    at->setNumber(atNum);
+    at->setType(atType);
+    at->setCoords(coord);
+    at->setBFac(bfac);
+
+    // Ligand object (includes DNA/RNA in "ATOM" field)
+    if ((tag == "HETATM") ||
+            isKnownNucleotide(nucleotideThreeLetterTranslator(aaType))) {
+        if (noWater) {
+            if (!(aaType == "HOH")) {
+                lig->addAtom(*at);
+                lig->setType(aaType);
+            }
+        } else {
+            lig->addAtom(*at);
+            lig->setType(aaType);
+        }
+    }// AminoAcid
+    else if ((tag == "ATOM  ")) {
+        // skip N-terminal ACE groups
+        if (aaType != "ACE") {
+            // DEBUG: it would be nice to load also alternative atoms
+            // skip alternative atoms, 
+            if (altAaID != ' ') {
+                if (verbose)
+                    cout << "Warning: Skipping extraneous amino acid entry "
+                        << aaNum << " " << atNum << " " << altAaID << ".\n";
+            } else {
+                aa->setType(aaType);
+                aa->getSideChain().setType(aaType);
+
+                if (!noHAtoms || isHeavyAtom(at->getCode())) {
+                    if (!inSideChain(*aa, *at))
+                        aa->addAtom(*at);
+                    else {
+                        aa->getSideChain().addAtom(*at);
+                    }
+                }
+            }
+        } else {
+            if (verbose)
+                cout << "Warning: Skipping N-terminal ACE group "
+                    << aaNum << " " << atNum << ".\n";
+        }
+    }
+    delete at;
+    return aaNum;
+}
 
 /**
  * Core function for PDB file parsing. 
@@ -290,8 +389,7 @@ void CifLoader::loadProtein(Protein& prot) {
             if (chain == ' ') {
                 loadChain = true;
                 chain = '#';
-            }
-            // Load only selected chain
+            }// Load only selected chain
             else if (chainList[i] == chain) {
                 loadChain = true;
                 chain = '#';
@@ -331,39 +429,36 @@ void CifLoader::loadProtein(Protein& prot) {
                 if (regex_search(atomLine, cif.getTag("header")) && (name == "")) {
                     name = atomLine;
                     sp->setType(name);
-                }
-                // read helix entry
+                }// read helix entry
                 else if (regex_search(atomLine, cif.getTag("helix"))) {
                     cif.parseGroup("helix", atomLine);
                     int colS = cif.getGroupColumnNumber("helix", "helix start");
                     int colE = cif.getGroupColumnNumber("helix", "helix end");
-                    
+
                     start = stoiDEF(cif.getGroupField("helix", atomLine, colS));
                     end = stoiDEF(cif.getGroupField("helix", atomLine, colE));
 
                     helixData.push_back(pair<const int, int>(start, end));
                     int colC = cif.getGroupColumnNumber("helix", "helix chain");
                     helixCode += cif.getGroupField("helix", atomLine, colC);
-                }
-                // read sheet entry
+                }// read sheet entry
                 else if (regex_search(atomLine, cif.getTag("sheet"))) {
                     cif.parseGroup("sheet range", atomLine);
                     int colS = cif.getGroupColumnNumber("sheet range", "sheet start");
                     int colE = cif.getGroupColumnNumber("sheet range", "sheet start");
-                    
+
                     start = stoiDEF(cif.getGroupField("sheet range", atomLine, colS));
                     end = stoiDEF(cif.getGroupField("sheet range", atomLine, colE));
 
                     sheetData.push_back(pair<const int, int>(start, end));
                     int colC = cif.getGroupColumnNumber("sheet range", "sheet chain");
                     sheetCode += cif.getGroupField("sheet range", atomLine, colC);
-                }
-                // Parse one line of the "ATOM" and "HETATM" fields
-                else if (atomLine.substr(0, 6) == "ATOM  " || 
+                }// Parse one line of the "ATOM" and "HETATM" fields
+                else if (atomLine.substr(0, 6) == "ATOM  " ||
                         atomLine.substr(0, 6) == "HETATM") {
                     tag = atomLine.substr(0, 6);
                     cif.parseGroup("atom", atomLine);
-                    
+
                     // Control model number
                     int colM = cif.getGroupColumnNumber("atom", "model");
                     readingModel = stouiDEF(cif.getGroupField("atom", atomLine, colM));
@@ -373,10 +468,10 @@ void CifLoader::loadProtein(Protein& prot) {
                     if (model == 999) {
                         model = readingModel;
                     }
-                    
+
                     int colC = cif.getGroupColumnNumber("atom", "chain");
                     char chainID = cif.getGroupField("atom", atomLine, colC).c_str()[0];
-                    
+
                     if (chainList[i] == chainID) {
                         if ((model == 999) || (model == readingModel)) {
                             int colAa = cif.getGroupColumnNumber("atom", "residue num");
@@ -392,7 +487,7 @@ void CifLoader::loadProtein(Protein& prot) {
                                      << " oldAaNum:" << oldAaNum << " lastAa:" << lastAa << "\n";
                                  */
                                 // Skip the first empty AminoAcid
-                                if ((aa->size() > 0) && (aa->getType1L() != 'X')) { 
+                                if ((aa->size() > 0) && (aa->getType1L() != 'X')) {
                                     if (sp->sizeAmino() == 0) {
                                         sp->setStartOffset(oldAaNum - 1);
                                     } else {
@@ -417,7 +512,7 @@ void CifLoader::loadProtein(Protein& prot) {
                                 aa = new AminoAcid();
                                 lig = new Ligand();
                             }
-                            oldAaNum = parseCIFline(atomLine, tag, lig, aa);
+                            oldAaNum = parseCifline(atomLine, tag, lig, aa);
                         } // end model check
                     } // end chain check
                 }
@@ -431,7 +526,7 @@ void CifLoader::loadProtein(Protein& prot) {
                 << sp->maxPdbNumber() << " aaNum:" << aaNum  
                 << " oldAaNum:" << oldAaNum << " lastAa:" << lastAa << "\n";
              */
-            
+
             // last residue/ligand
             // AminoAcid
             if ((aa->size() > 0) && (aa->getType1L() != 'X')) {
@@ -561,108 +656,4 @@ void CifLoader::loadProtein(Protein& prot) {
         } // end loadChain
     } // chains iteration
 
-}
-
-/**
- * Parse a single line of a CIF file.
- * @param atomLine the whole CIF line as it is
- * @param tag the first field (keyword) in a PDB line
- * @param lig pointer to a ligan
- * @param aa pointer to an amino acid
- * @return Residue number read from the PDB line.
- */
-int
-CifLoader::parseCIFline(string atomLine, string tag, Ligand* lig, AminoAcid* aa) {
-    // get atom id
-    int atNum = stoiDEF(cif.getGroupField("atom", atomLine, 
-            cif.getGroupColumnNumber("atom", "atom id")));
-    // get residue number
-    int aaNum = stoiDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "residue num")));
-    char altAaID = cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "alt id")).c_str()[0]; // "Code for insertion of residues"
-    
-    // get x, y, z coordinates
-    vgVector3<double> coord;
-    coord.x = stodDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "x")));
-    coord.y = stodDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "y")));
-    coord.z = stodDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "z")));
-    
-    // get b-factor
-    double bfac = 0.0;
-    int colBfac = cif.getGroupColumnNumber("atom", "bfac");
-    if (colBfac != -1) {
-        string sbfac = cif.getGroupField("atom", atomLine, colBfac);
-        if (sbfac != "?" || sbfac != ".") {
-            bfac = stodDEF(sbfac);
-        }
-    }
-    
-    // get atom name
-    string atType = cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "atom name"));
-    
-    // get residue name
-    string aaType = cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "residue name"));
-    
-    // take care of deuterium atoms
-    if (atType == "D") {
-        cerr << "--> " << atType << "\n";
-        atType = "H";
-    }
-
-    // Initialize the Atom object
-    Atom* at = new Atom();
-    at->setNumber(atNum);
-    at->setType(atType);
-    at->setCoords(coord);
-    at->setBFac(bfac);
-
-    // Ligand object (includes DNA/RNA in "ATOM" field)
-    if ((tag == "HETATM") ||
-            isKnownNucleotide(nucleotideThreeLetterTranslator(aaType))) {
-        if (noWater) {
-            if (!(aaType == "HOH")) {
-                lig->addAtom(*at);
-                lig->setType(aaType);
-            }
-        } else {
-            lig->addAtom(*at);
-            lig->setType(aaType);
-        }
-    }
-    // AminoAcid
-    else if ((tag == "ATOM  ")) {
-        // skip N-terminal ACE groups
-        if (aaType != "ACE") {
-            // DEBUG: it would be nice to load also alternative atoms
-            // skip alternative atoms, 
-            if (altAaID != ' ') {
-                if (verbose)
-                    cout << "Warning: Skipping extraneous amino acid entry "
-                            << aaNum << " " << atNum << " " << altAaID << ".\n";
-            } else {
-                aa->setType(aaType);
-                aa->getSideChain().setType(aaType);
-
-                if (!noHAtoms || isHeavyAtom(at->getCode())) {
-                    if (!inSideChain(*aa, *at))
-                        aa->addAtom(*at);
-                    else {
-                        aa->getSideChain().addAtom(*at);
-                    }
-                }
-            }
-        } else {
-            if (verbose)
-                cout << "Warning: Skipping N-terminal ACE group "
-                        << aaNum << " " << atNum << ".\n";
-        }
-    }
-    delete at;
-    return aaNum;
 }

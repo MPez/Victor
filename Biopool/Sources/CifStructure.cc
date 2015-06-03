@@ -7,6 +7,7 @@
 
 #include <regex>
 #include <algorithm>
+
 #include "CifStructure.h"
 
 using namespace Victor;
