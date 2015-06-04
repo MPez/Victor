@@ -6,7 +6,9 @@
  */
 
 #include <regex>
-#include <algorithm>
+#include <iostream>
+
+#include <IoTools.h>
 
 #include "CifStructure.h"
 
@@ -127,7 +129,7 @@ string CifStructure::getGroupField(string name, string line, int columnNum) {
     vector<string>& group = getGroup(name);
     vector<string> fields;
     string field;
-    for (int i = 0; i < group.size(); i++) {
+    for (unsigned int i = 0; i < group.size(); i++) {
         iss >> field;
         fields.push_back(field);
     }
@@ -143,27 +145,25 @@ void CifStructure::parseGroup(string name, string line) {
     vector<string>& group = getGroup(name);
 
     // exit the function if the group name is already parsed
-    if (isGroupParsed(name)) {
-        break;
-    }
-    
-    while (input) {
-        regex groupName(getTag(name));
-        smatch match;
-        if (regex_search(line, match, groupName)) {
-            group.push_back(match.suffix().str());
-            found = true;
-        } else {
-            found = false;
-        }
+    if (!isGroupParsed(name)) {
+        while (input) {
+            regex groupName(getTag(name));
+            smatch match;
+            if (regex_search(line, match, groupName)) {
+                group.push_back(match.suffix().str());
+                found = true;
+            } else {
+                found = false;
+            }
 
-        // exit the loop when the research of the fields is completed
-        if (!found && group.size() > 1) {
-            setParsedFlag(name);
-            break;
-        }
+            // exit the loop when the research of the fields is completed
+            if (!found && group.size() > 1) {
+                setParsedFlag(name);
+                break;
+            }
 
-        line = readLine(input);
+            line = readLine(input);
+        }
     }
 }
 
@@ -207,10 +207,3 @@ bool CifStructure::isGroupParsed(string name) {
         return sheetRangeGroupParsed;
     }
 }
-
-
-
-
-
-
-

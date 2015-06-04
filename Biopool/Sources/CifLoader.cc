@@ -1,19 +1,9 @@
-/*  This file is part of Victor.
-
-   Victor is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   Victor is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with Victor.  If not, see <http://www.gnu.org/licenses/>.
+/* 
+ * File:   CifLoader.cc
+ * Author: marco
+ * 
+ * Created on 3 giugno 2015, 23.20
  */
-
 
 // Includes:
 #include <regex>
@@ -37,18 +27,17 @@ using namespace std;
 
 // CONSTRUCTORS/DESTRUCTOR:
 
-CifLoader::CifLoader(istream& _input = cin, bool _permissive = false,
-        bool _noHAtoms = false, bool _noHetAtoms = false, bool _noSecondary = false,
-        bool _noConnection = false, bool _noWater = true, bool _verb = true,
-        bool _allChains = false, string _NULL = "", bool _onlyMetal = false,
-        bool _noNucleotideChains = true) :
+CifLoader::CifLoader(istream& _input, bool _permissive, bool _noHAtoms,
+        bool _noHetAtoms, bool _noSecondary, bool _noConnection, bool _noWater,
+        bool _verb, bool _allChains, string _NULL, bool _onlyMetal,
+        bool _noNucleotideChains ) :
 input(_input), permissive(_permissive), valid(true), noHAtoms(_noHAtoms),
 noHetAtoms(_noHetAtoms), noSecondary(_noSecondary), noConnection(_noConnection),
 noWater(_noWater), verbose(_verb), allChains(_allChains), chain(' '),
 model(999), altAtom('A'), helixCode(_NULL),
 //sheetCode(_NULL), helixData(), sheetData(), onlyMetalHetAtoms(_onlyMetal), 
 sheetCode(_NULL), onlyMetalHetAtoms(_onlyMetal), noNucleotideChains(_noNucleotideChains) {
-    cif = new CifStructure(input);
+    cif = new CifStructure(_input);
 }
 
 CifLoader::~CifLoader() {
@@ -106,13 +95,13 @@ unsigned int CifLoader::getMaxModels() {
     unsigned int max = 0;
 
     // search column's number of the model field in the atom group
-    cif.parseGroup("atom", atomLine);
-    int col = cif.getGroupColumnNumber("atom", "model");
+    cif->parseGroup("atom", atomLine);
+    int col = cif->getGroupColumnNumber("atom", "model");
 
     if (col != 0) {
         while (input) {
             if (atomLine.substr(0, 4) == "ATOM") {
-                max = stoiDEF(cif.getGroupField("atom", atomLine, col));
+                max = stoiDEF(cif->getGroupField("atom", atomLine, col));
             }
             atomLine = readLine(input);
         }
@@ -135,19 +124,19 @@ vector<char> CifLoader::getAllChains() {
 
     unsigned int modelNum = 0;
 
-    cif.parseGroup("atom", atomLine);
-    int modelCol = cif.getGroupColumnNumber("atom", "model");
-    int chainCol = cif.getGroupColumnNumber("atom", "chain");
+    cif->parseGroup("atom", atomLine);
+    int modelCol = cif->getGroupColumnNumber("atom", "model");
+    int chainCol = cif->getGroupColumnNumber("atom", "chain");
 
     while (input) {
         if (atomLine.substr(0, 4) == "ATOM") {
-            modelNum = stoiDEF(cif.getGroupField("atom", atomLine, modelCol));
+            modelNum = stoiDEF(cif->getGroupField("atom", atomLine, modelCol));
             // only consider first model: others duplicate chain IDs
             if (modelNum > 1) {
                 break;
             }
             // check for new chains containing amino acids
-            char id = (cif.getGroupField("atom", atomLine, chainCol).c_str())[0];
+            char id = (cif->getGroupField("atom", atomLine, chainCol).c_str())[0];
             if (id != lastChain) {
                 lastChain = id;
                 res.push_back(id);
@@ -259,40 +248,40 @@ CifLoader::loadSpacer(Spacer& sp){
 int
 CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa) {
     // get atom id
-    int atNum = stoiDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "atom id")));
+    int atNum = stoiDEF(cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "atom id")));
     // get residue number
-    int aaNum = stoiDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "residue num")));
-    char altAaID = cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "alt id")).c_str()[0]; // "Code for insertion of residues"
+    int aaNum = stoiDEF(cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "residue num")));
+    char altAaID = cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "alt id")).c_str()[0]; // "Code for insertion of residues"
 
     // get x, y, z coordinates
     vgVector3<double> coord;
-    coord.x = stodDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "x")));
-    coord.y = stodDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "y")));
-    coord.z = stodDEF(cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "z")));
+    coord.x = stodDEF(cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "x")));
+    coord.y = stodDEF(cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "y")));
+    coord.z = stodDEF(cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "z")));
 
     // get b-factor
     double bfac = 0.0;
-    int colBfac = cif.getGroupColumnNumber("atom", "bfac");
+    int colBfac = cif->getGroupColumnNumber("atom", "bfac");
     if (colBfac != -1) {
-        string sbfac = cif.getGroupField("atom", atomLine, colBfac);
+        string sbfac = cif->getGroupField("atom", atomLine, colBfac);
         if (sbfac != "?" || sbfac != ".") {
             bfac = stodDEF(sbfac);
         }
     }
 
     // get atom name
-    string atType = cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "atom name"));
+    string atType = cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "atom name"));
 
     // get residue name
-    string aaType = cif.getGroupField("atom", atomLine,
-            cif.getGroupColumnNumber("atom", "residue name"));
+    string aaType = cif->getGroupField("atom", atomLine,
+            cif->getGroupColumnNumber("atom", "residue name"));
 
     // take care of deuterium atoms
     if (atType == "D") {
@@ -426,42 +415,43 @@ void CifLoader::loadProtein(Protein& prot) {
             // read all lines
             do {
                 // read header entry
-                if (regex_search(atomLine, cif.getTag("header")) && (name == "")) {
+                if (regex_search(atomLine, regex(cif->getTag("header")))
+                        && (name == "")) {
                     name = atomLine;
                     sp->setType(name);
                 }// read helix entry
-                else if (regex_search(atomLine, cif.getTag("helix"))) {
-                    cif.parseGroup("helix", atomLine);
-                    int colS = cif.getGroupColumnNumber("helix", "helix start");
-                    int colE = cif.getGroupColumnNumber("helix", "helix end");
+                else if (regex_search(atomLine, regex(cif->getTag("helix")))) {
+                    cif->parseGroup("helix", atomLine);
+                    int colS = cif->getGroupColumnNumber("helix", "helix start");
+                    int colE = cif->getGroupColumnNumber("helix", "helix end");
 
-                    start = stoiDEF(cif.getGroupField("helix", atomLine, colS));
-                    end = stoiDEF(cif.getGroupField("helix", atomLine, colE));
+                    start = stoiDEF(cif->getGroupField("helix", atomLine, colS));
+                    end = stoiDEF(cif->getGroupField("helix", atomLine, colE));
 
                     helixData.push_back(pair<const int, int>(start, end));
-                    int colC = cif.getGroupColumnNumber("helix", "helix chain");
-                    helixCode += cif.getGroupField("helix", atomLine, colC);
+                    int colC = cif->getGroupColumnNumber("helix", "helix chain");
+                    helixCode += cif->getGroupField("helix", atomLine, colC);
                 }// read sheet entry
-                else if (regex_search(atomLine, cif.getTag("sheet"))) {
-                    cif.parseGroup("sheet range", atomLine);
-                    int colS = cif.getGroupColumnNumber("sheet range", "sheet start");
-                    int colE = cif.getGroupColumnNumber("sheet range", "sheet start");
+                else if (regex_search(atomLine, regex(cif->getTag("sheet")))) {
+                    cif->parseGroup("sheet range", atomLine);
+                    int colS = cif->getGroupColumnNumber("sheet range", "sheet start");
+                    int colE = cif->getGroupColumnNumber("sheet range", "sheet start");
 
-                    start = stoiDEF(cif.getGroupField("sheet range", atomLine, colS));
-                    end = stoiDEF(cif.getGroupField("sheet range", atomLine, colE));
+                    start = stoiDEF(cif->getGroupField("sheet range", atomLine, colS));
+                    end = stoiDEF(cif->getGroupField("sheet range", atomLine, colE));
 
                     sheetData.push_back(pair<const int, int>(start, end));
-                    int colC = cif.getGroupColumnNumber("sheet range", "sheet chain");
-                    sheetCode += cif.getGroupField("sheet range", atomLine, colC);
+                    int colC = cif->getGroupColumnNumber("sheet range", "sheet chain");
+                    sheetCode += cif->getGroupField("sheet range", atomLine, colC);
                 }// Parse one line of the "ATOM" and "HETATM" fields
                 else if (atomLine.substr(0, 6) == "ATOM  " ||
                         atomLine.substr(0, 6) == "HETATM") {
                     tag = atomLine.substr(0, 6);
-                    cif.parseGroup("atom", atomLine);
+                    cif->parseGroup("atom", atomLine);
 
                     // Control model number
-                    int colM = cif.getGroupColumnNumber("atom", "model");
-                    readingModel = stouiDEF(cif.getGroupField("atom", atomLine, colM));
+                    int colM = cif->getGroupColumnNumber("atom", "model");
+                    readingModel = stouiDEF(cif->getGroupField("atom", atomLine, colM));
                     if (readingModel > model)
                         break;
                     // Get only the first model if not specified
@@ -469,13 +459,13 @@ void CifLoader::loadProtein(Protein& prot) {
                         model = readingModel;
                     }
 
-                    int colC = cif.getGroupColumnNumber("atom", "chain");
-                    char chainID = cif.getGroupField("atom", atomLine, colC).c_str()[0];
+                    int colC = cif->getGroupColumnNumber("atom", "chain");
+                    char chainID = cif->getGroupField("atom", atomLine, colC).c_str()[0];
 
                     if (chainList[i] == chainID) {
                         if ((model == 999) || (model == readingModel)) {
-                            int colAa = cif.getGroupColumnNumber("atom", "residue num");
-                            aaNum = stoiDEF(cif.getGroupField("atom", atomLine, colAa));
+                            int colAa = cif->getGroupColumnNumber("atom", "residue num");
+                            aaNum = stoiDEF(cif->getGroupField("atom", atomLine, colAa));
 
                             // Insert the Ligand object into LigandSet
                             if (aaNum != oldAaNum) {

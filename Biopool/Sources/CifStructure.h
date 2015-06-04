@@ -135,8 +135,8 @@ namespace Victor {
             bool sheetRangeGroupParsed = false;
             bool sheetHboundgroupParsed = false;
         };
-    }
-
+    } // namespace Biopool
+} // namespace Victor 
 
 #endif	/* CIFSTRUCTURE_H */
 

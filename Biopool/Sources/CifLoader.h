@@ -1,26 +1,16 @@
-/*  This file is part of Victor.
-
-    Victor is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    Victor is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Victor.  If not, see <http://www.gnu.org/licenses/>.
+/* 
+ * File:   CifLoader.h
+ * Author: marco
+ *
+ * Created on 3 giugno 2015, 23.20
  */
 
-#ifndef _CIF_LOADER_H_
-#define _CIF_LOADER_H_
+#ifndef CIFLOADER_H
+#define	CIFLOADER_H
 
 // Includes:
 #include <string.h>
 #include <utility>
-
 #include <Loader.h>
 #include <AminoAcid.h>
 #include <Spacer.h>
@@ -34,10 +24,10 @@
 
 namespace Victor {
     namespace Biopool {
-
+        
         /**
          * @brief Loads components (Atoms, Groups, Spacer, etc.) in standard CIF format.
-         * */
+         */
         class CifLoader : public Loader {
         public:
 
@@ -133,7 +123,7 @@ namespace Victor {
             vector<pair<int, int> > helixData; // begin and end of the helix
             vector<pair<int, int> > sheetData;
 
-            CifStructure cif;
+            CifStructure* cif;
         };
 
         inline
@@ -211,7 +201,8 @@ namespace Victor {
             allChains = true;
         }
 
-    }
-} //namespace
-#endif //_CIF_LOADER_H_
+    } // namespace Biopool
+} // namespace Victor
+
+#endif	/* CIFLOADER_H */
 
