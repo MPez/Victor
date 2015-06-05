@@ -5,8 +5,8 @@
  * Created on 1 giugno 2015, 11.36
  */
 
-#include <regex>
 #include <iostream>
+#include <algorithm>
 
 #include <IoTools.h>
 
@@ -17,6 +17,37 @@ using namespace Victor::Biopool;
 using namespace std;
 
 CifStructure::CifStructure(istream& input) : input(input) {
+    header = "_struct_keywords.pdbx_keywords";
+    model = "pdbx_PDB_model_num";
+    helix = "_struct_conf.";
+    helixStart = "beg_auth_seq_id";
+    helixEnd = "end_auth_seq_id";
+    helixChainId = "beg_auth_asym_id";
+    atom = "_atom_site.";
+    residueNum = "auth_seq_id";
+    atomId = "id";
+    atomAltId = "label_alt_id";
+    tempFactor = "B_iso_or_equiv";
+    atomName = "auth_atom_id";
+    residueName = "auth_comp_id";
+    x = "Cartn_x";
+    y = "Cartn_y";
+    z = "Cartn_z";
+    chain = "auth_asym_id";
+    sheet = "_struct_sheet.";
+    sheetOrder = "_struct_sheet_order.";
+    sheetRange = "_struct_sheet_range.";
+    sheetHbond = "_pdbx_struct_sheet_hbond.";
+    sheetStart = "beg_auth_seq_id";
+    sheetEnd = "end_auth_seq_id";
+    sheetChainId = "beg_auth_asym_id";
+    
+    atomGroupParsed = false;
+    helixGroupParsed = false;
+    sheetGroupParsed = false;
+    sheetOrderGroupParsed = false;
+    sheetRangeGroupParsed = false;
+    sheetHboundgroupParsed = false;
 }
 
 CifStructure::~CifStructure() {
@@ -147,10 +178,11 @@ void CifStructure::parseGroup(string name, string line) {
     // exit the function if the group name is already parsed
     if (!isGroupParsed(name)) {
         while (input) {
-            regex groupName(getTag(name));
-            smatch match;
-            if (regex_search(line, match, groupName)) {
-                group.push_back(match.suffix().str());
+            string groupName(getTag(name));
+            size_t pos = line.find(groupName);
+            if (pos != string::npos) {
+                group.push_back(line.substr(pos + groupName.size(),
+			line.size() - groupName.size()));
                 found = true;
             } else {
                 found = false;

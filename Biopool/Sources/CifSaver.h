@@ -49,7 +49,7 @@ namespace Victor {
 
             // PREDICATES:
 
-            inline void endFile();
+            void endFile();
 
             // MODIFIERS:
 
@@ -62,7 +62,7 @@ namespace Victor {
             void setChain(char _ch);
 
             /**
-             * Saves a group in PDB format.
+             * Saves a group in CIF format.
              * @param group reference 
              * @return void
              */
@@ -78,54 +78,56 @@ namespace Victor {
 
         private:
             // HELPERS:
-            void writeSeqRes(Spacer& sp); // writes SEQRES entry
-            void writeSecondary(Spacer& sp);
+            
+            // writes SEQRES entry
+            void writeSeqRes(Spacer& sp);
+            
             // writes secondary entries (SHEET, HELIX, etc.)
+            void writeSecondary(Spacer& sp);
+            
             // ATTRIBUTES 
             ostream& output; // output stream
             bool writeSeq, writeSecStr, writeTer;
+            // offsets that determine at which atom,
+            // aminoacid and ligand number to start
             unsigned int atomOffset, ligandOffset;
             int aminoOffset;
             char chain; // chain ID
-            // offsets that determine at which atom, aminoacid and ligand number to start
         };
 
-        inline
-        void CifSaver::setWriteSecondaryStructure() {
+        inline void CifSaver::endFile() {
+            output << "END\n";
+        }
+
+        inline void CifSaver::setWriteSecondaryStructure() {
             writeSecStr = true;
         }
 
-        inline
-        void CifSaver::setDoNotWriteSecondaryStructure() {
+        inline void CifSaver::setDoNotWriteSecondaryStructure() {
             writeSecStr = false;
         }
 
-        inline
-        void CifSaver::setWriteSeqRes() {
+        inline void CifSaver::setWriteSeqRes() {
             writeSeq = true;
         }
 
-        inline
-        void CifSaver::setDoNotWriteSeqRes() {
+        inline  void CifSaver::setDoNotWriteSeqRes() {
             writeSeq = false;
         }
 
-        inline
-        void CifSaver::setWriteAtomOnly() {
+        inline void CifSaver::setWriteAtomOnly() {
             writeSecStr = false;
             writeSeq = false;
             writeTer = false;
         }
 
-        inline
-        void CifSaver::setWriteAll() {
+        inline void CifSaver::setWriteAll() {
             writeSecStr = true;
             writeSeq = true;
             writeTer = true;
         }
 
-        inline
-        void CifSaver::setChain(char _ch) {
+        inline void CifSaver::setChain(char _ch) {
             chain = _ch;
         }
 

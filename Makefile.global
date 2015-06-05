@@ -32,7 +32,7 @@
 #
 
 # These flags should always be used.
-STANDARDFLAGS = -Wall -ansi -pedantic -DNEXCEPTIONS -DLINUX -c -std=c++11
+STANDARDFLAGS = -Wall -ansi -pedantic -DNEXCEPTIONS -DLINUX -c
 
 DEBUGFLAGS = -g
 

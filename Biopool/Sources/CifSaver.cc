@@ -18,7 +18,7 @@ using namespace std;
 
 // CONSTRUCTORS/DESTRUCTOR:
 
-CifSaver::CifSaver(ostream& _output = cout) :
+CifSaver::CifSaver(ostream& _output) :
 output(_output), writeSeq(true), writeSecStr(true), writeTer(true),
 atomOffset(0), aminoOffset(0), ligandOffset(0), chain(' ') {
 }
@@ -29,19 +29,15 @@ CifSaver::~CifSaver() {
 
 // PREDICATES:
 
-void CifSaver::endFile() {
-    output << "END\n";
-}
-
 // MODIFIERS:
 
 
 /**
- * Saves a group in PDB format.
+ * Saves a group in CIF format.
  * @param group reference 
  * @return void
  */
-void PdbSaver::saveGroup(Group& gr) {
+void CifSaver::saveGroup(Group& gr) {
     gr.sync();
 
     for (unsigned int i = 0; i < gr.size(); i++) {
@@ -85,7 +81,7 @@ void PdbSaver::saveGroup(Group& gr) {
  *@param sideChain reference 
  *@return void
  */
-void PdbSaver::saveSideChain(SideChain& sc) {
+void CifSaver::saveSideChain(SideChain& sc) {
     saveGroup(sc);
 }
 
@@ -94,7 +90,7 @@ void PdbSaver::saveSideChain(SideChain& sc) {
  *@param AminoAcid reference 
  *@return void
  */
-void PdbSaver::saveAminoAcid(AminoAcid& aa) {
+void CifSaver::saveAminoAcid(AminoAcid& aa) {
     saveGroup(aa);
 }
 
@@ -103,7 +99,7 @@ void PdbSaver::saveAminoAcid(AminoAcid& aa) {
  *@param Spacer reference 
  *@return void
  */
-void PdbSaver::saveSpacer(Spacer& sp) {
+void CifSaver::saveSpacer(Spacer& sp) {
     PRINT_NAME;
 
     if (sp.size() > 0) {
@@ -173,7 +169,7 @@ void PdbSaver::saveSpacer(Spacer& sp) {
  *@param Ligand reference 
  *@return void
  */
-void PdbSaver::saveLigand(Ligand& gr) {
+void CifSaver::saveLigand(Ligand& gr) {
     gr.sync();
     unsigned int oldPrec = output.precision();
     ios::fmtflags oldFlags = output.flags();
@@ -232,7 +228,7 @@ void PdbSaver::saveLigand(Ligand& gr) {
  *@param LigandSet reference 
  *@return void
  */
-void PdbSaver::saveLigandSet(LigandSet& ls) {
+void CifSaver::saveLigandSet(LigandSet& ls) {
     ligandOffset = ls.getStartOffset(); //set the offset for current LigandSet
 
     for (unsigned int i = 0; i < ls.sizeLigand(); i++) {
@@ -248,7 +244,7 @@ void PdbSaver::saveLigandSet(LigandSet& ls) {
  *@param Protein reference 
  *@return void
  */
-void PdbSaver::saveProtein(Protein& prot) {
+void CifSaver::saveProtein(Protein& prot) {
     //if (prot.sizeProtein()==0)
     //        ERROR("Empty Protein",exception);
 
@@ -279,7 +275,7 @@ void PdbSaver::saveProtein(Protein& prot) {
  *@param Spacer reference 
  *@return void
  */
-void PdbSaver::writeSeqRes(Spacer& sp) {
+void CifSaver::writeSeqRes(Spacer& sp) {
     for (unsigned int i = 0; i < sp.sizeAmino() / 13; i++) {
         output << "SEQRES " << setw(3) << i << "   " << setw(3)
                 << sp.sizeAmino() << "   ";
@@ -302,6 +298,6 @@ void PdbSaver::writeSeqRes(Spacer& sp) {
  *@param sideChain reference 
  *@return void
  */
-void PdbSaver::writeSecondary(Spacer& sp) {
+void CifSaver::writeSecondary(Spacer& sp) {
 
 }

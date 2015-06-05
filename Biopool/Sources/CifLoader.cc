@@ -6,7 +6,6 @@
  */
 
 // Includes:
-#include <regex>
 #include <string>
 
 #include <IoTools.h>
@@ -415,12 +414,12 @@ void CifLoader::loadProtein(Protein& prot) {
             // read all lines
             do {
                 // read header entry
-                if (regex_search(atomLine, regex(cif->getTag("header")))
+		if (atomLine.find(cif->getTag("header")) != string::npos
                         && (name == "")) {
                     name = atomLine;
                     sp->setType(name);
                 }// read helix entry
-                else if (regex_search(atomLine, regex(cif->getTag("helix")))) {
+                else if (atomLine.find(cif->getTag("helix")) != string::npos) {
                     cif->parseGroup("helix", atomLine);
                     int colS = cif->getGroupColumnNumber("helix", "helix start");
                     int colE = cif->getGroupColumnNumber("helix", "helix end");
@@ -432,7 +431,7 @@ void CifLoader::loadProtein(Protein& prot) {
                     int colC = cif->getGroupColumnNumber("helix", "helix chain");
                     helixCode += cif->getGroupField("helix", atomLine, colC);
                 }// read sheet entry
-                else if (regex_search(atomLine, regex(cif->getTag("sheet")))) {
+                else if (atomLine.find(cif->getTag("sheet")) != string::npos) {
                     cif->parseGroup("sheet range", atomLine);
                     int colS = cif->getGroupColumnNumber("sheet range", "sheet start");
                     int colE = cif->getGroupColumnNumber("sheet range", "sheet start");

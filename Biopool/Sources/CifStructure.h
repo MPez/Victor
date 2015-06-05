@@ -94,30 +94,30 @@ namespace Victor {
             istream& input;
 
             // CIF tags
-            string header = "_struct_keywords.pdbx_keywords";
-            string model = "pdbx_PDB_model_num";
-            string helix = "_struct_conf.";
-            string helixStart = "beg_auth_seq_id";
-            string helixEnd = "end_auth_seq_id";
-            string helixChainId = "beg_auth_asym_id";
-            string atom = "_atom_site.";
-            string residueNum = "auth_seq_id";
-            string atomId = "id";
-            string atomAltId = "label_alt_id";
-            string tempFactor = "B_iso_or_equiv";
-            string atomName = "auth_atom_id";
-            string residueName = "auth_comp_id";
-            string x = "Cartn_x";
-            string y = "Cartn_y";
-            string z = "Cartn_z";
-            string chain = "auth_asym_id";
-            string sheet = "_struct_sheet.";
-            string sheetOrder = "_struct_sheet_order.";
-            string sheetRange = "_struct_sheet_range.";
-            string sheetHbond = "_pdbx_struct_sheet_hbond.";
-            string sheetStart = "beg_auth_seq_id";
-            string sheetEnd = "end_auth_seq_id";
-            string sheetChainId = "beg_auth_asym_id";
+            string header;
+            string model;
+            string helix;
+            string helixStart;
+            string helixEnd;
+            string helixChainId;
+            string atom;
+            string residueNum;
+            string atomId;
+            string atomAltId;
+            string tempFactor;
+            string atomName;
+            string residueName;
+            string x;
+            string y;
+            string z;
+            string chain;
+            string sheet;
+            string sheetOrder;
+            string sheetRange;
+            string sheetHbond;
+            string sheetStart;
+            string sheetEnd;
+            string sheetChainId;
             
             // collections of CIF group fields
             vector<string> atomGroup;
@@ -128,12 +128,12 @@ namespace Victor {
             vector<string> sheetHbondGroup;
 
             // flags
-            bool atomGroupParsed = false;
-            bool helixGroupParsed = false;
-            bool sheetGroupParsed = false;
-            bool sheetOrderGroupParsed = false;
-            bool sheetRangeGroupParsed = false;
-            bool sheetHboundgroupParsed = false;
+            bool atomGroupParsed;
+            bool helixGroupParsed;
+            bool sheetGroupParsed;
+            bool sheetOrderGroupParsed;
+            bool sheetRangeGroupParsed;
+            bool sheetHboundgroupParsed;
         };
     } // namespace Biopool
 } // namespace Victor 

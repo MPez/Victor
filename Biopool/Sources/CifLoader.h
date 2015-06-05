@@ -126,78 +126,63 @@ namespace Victor {
             CifStructure* cif;
         };
 
-        inline
-        bool CifLoader::isValid() {
+        inline bool CifLoader::isValid() {
             return valid;
         }
 
-        inline
-        void CifLoader::setPermissive() {
+        inline void CifLoader::setPermissive() {
             permissive = true;
         }
 
-        inline
-        void CifLoader::setNonPermissive() {
+        inline void CifLoader::setNonPermissive() {
             permissive = false;
         }
 
-        inline
-        void CifLoader::setVerbose() {
+        inline void CifLoader::setVerbose() {
             verbose = true;
         }
 
-        inline
-        void CifLoader::setNoVerbose() {
+        inline void CifLoader::setNoVerbose() {
             verbose = false;
         }
 
-        inline
-        void CifLoader::setChain(char _ch) {
+        inline void CifLoader::setChain(char _ch) {
             chain = _ch;
         }
 
-        inline
-        void CifLoader::setModel(unsigned int _mod) {
+        inline void CifLoader::setModel(unsigned int _mod) {
             model = _mod;
         }
 
-        inline
-        void CifLoader::setAltAtom(char _a) {
+        inline void CifLoader::setAltAtom(char _a) {
             altAtom = _a;
         }
 
-        inline
-        void CifLoader::setNoHAtoms() {
+        inline void CifLoader::setNoHAtoms() {
             noHAtoms = true;
         }
 
-        inline
-        void CifLoader::setNoHetAtoms() {
+        inline void CifLoader::setNoHetAtoms() {
             noHetAtoms = true;
         }
 
-        inline
-        void CifLoader::setNoSecondary() {
+        inline void CifLoader::setNoSecondary() {
             noSecondary = true;
         }
 
-        inline
-        void CifLoader::setWithSecondary() {
+        inline void CifLoader::setWithSecondary() {
             noSecondary = false;
         }
 
-        inline
-        void CifLoader::setNoConnection() {
+        inline void CifLoader::setNoConnection() {
             noConnection = true;
         }
 
-        inline
-        void CifLoader::setWithConnection() {
+        inline void CifLoader::setWithConnection() {
             noConnection = false;
         }
 
-        inline
-        void CifLoader::setAllChains() {
+        inline void CifLoader::setAllChains() {
             allChains = true;
         }
 
