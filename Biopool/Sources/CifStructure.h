@@ -12,7 +12,7 @@
 // Includes:
 #include <string>
 #include <vector>
-#include <istream>
+#include <iostream>
 
 using std::string;
 using std::istream;
@@ -31,8 +31,9 @@ namespace Victor {
             /**
              * Constructor
              * @param input input file stream
+	     * @param output output file stream
              */
-            CifStructure(istream& input);
+            CifStructure(istream& input, ostream& output = cout);
             
             /**
              * Destructor
@@ -68,13 +69,13 @@ namespace Victor {
             * @param columnNum number of column
             * @return field at columnNum column
             */
-            string getGroupField(string name, string line, int columnNum);
+            string getGroupField(string name, string& line, int columnNum);
             
             /**
             * Parses group of CIF fields and creates a vector with columns positions.
             * @param name name of the group 
             */
-            void parseGroup(string group, string line);
+            void parseGroup(string group, string& line);
             
             /**
             * Sets flag of the parsed group
@@ -88,10 +89,17 @@ namespace Victor {
              * @return true if group is parsed, false otherwise
              */
             bool isGroupParsed(string name);
+	    
+	    /**
+	     * Prints group records names into output stream.
+             * @param name name of the group
+             */
+	    void printGroup(string name);
             
         private:
             // CIF file
             istream& input;
+	    ostream& output;
 
             // CIF tags
             string header;
@@ -103,7 +111,7 @@ namespace Victor {
             string atom;
             string residueNum;
             string atomId;
-            string atomAltId;
+            string residueIns;
             string tempFactor;
             string atomName;
             string residueName;

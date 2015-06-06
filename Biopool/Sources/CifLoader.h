@@ -34,7 +34,8 @@ namespace Victor {
             // CONSTRUCTORS/DESTRUCTOR:
             /**
              * Constructor.
-             * @param _input = the CIF file object
+             * @param _input = CIF file object
+	     * @param _output = log file
              * @param _permissive = if true, allows loading residues with missing atoms
              * @param _noHAtoms = if true, doesn't load Hydrogens
              * @param _noHetAtoms = if true, doesn't load het atoms
@@ -47,7 +48,7 @@ namespace Victor {
              * @param _onlyMetal = if true, load only metals as ligands
              * @param _noNucleotideChains = if true, doesn't load DNA/RNA chains
              */
-            CifLoader(istream& _input = cin, bool _permissive = false,
+            CifLoader(istream& _input = cin, ostream& output = cout, bool _permissive = false,
                     bool _noHAtoms = false, bool _noHetAtoms = false,
                     bool _noSecondary = false, bool _noConnection = false,
                     bool _noWater = true, bool _verb = true, bool _allChains = false,
@@ -102,6 +103,7 @@ namespace Victor {
             // ATTRIBUTES 
         private:
             istream& input; // input stream
+	    ostream& output;
             bool permissive; //
             bool valid; //
             bool noHAtoms; //

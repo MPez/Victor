@@ -16,31 +16,32 @@ using namespace Victor;
 using namespace Victor::Biopool;
 using namespace std;
 
-CifStructure::CifStructure(istream& input) : input(input) {
+CifStructure::CifStructure(istream& input, ostream& output) : 
+input(input), output(output) {
     header = "_struct_keywords.pdbx_keywords";
-    model = "pdbx_PDB_model_num";
+    model = "pdbx_PDB_model_num ";
     helix = "_struct_conf.";
-    helixStart = "beg_auth_seq_id";
-    helixEnd = "end_auth_seq_id";
-    helixChainId = "beg_auth_asym_id";
+    helixStart = "beg_auth_seq_id ";
+    helixEnd = "end_auth_seq_id ";
+    helixChainId = "beg_auth_asym_id ";
     atom = "_atom_site.";
-    residueNum = "auth_seq_id";
-    atomId = "id";
-    atomAltId = "label_alt_id";
-    tempFactor = "B_iso_or_equiv";
-    atomName = "auth_atom_id";
-    residueName = "auth_comp_id";
-    x = "Cartn_x";
-    y = "Cartn_y";
-    z = "Cartn_z";
-    chain = "auth_asym_id";
+    residueNum = "auth_seq_id ";
+    atomId = "id ";
+    residueIns = "pdbx_PDB_ins_code ";
+    tempFactor = "B_iso_or_equiv ";
+    atomName = "auth_atom_id ";
+    residueName = "auth_comp_id ";
+    x = "Cartn_x ";
+    y = "Cartn_y ";
+    z = "Cartn_z ";
+    chain = "auth_asym_id ";
     sheet = "_struct_sheet.";
     sheetOrder = "_struct_sheet_order.";
     sheetRange = "_struct_sheet_range.";
     sheetHbond = "_pdbx_struct_sheet_hbond.";
-    sheetStart = "beg_auth_seq_id";
-    sheetEnd = "end_auth_seq_id";
-    sheetChainId = "beg_auth_asym_id";
+    sheetStart = "beg_auth_seq_id ";
+    sheetEnd = "end_auth_seq_id ";
+    sheetChainId = "beg_auth_asym_id ";
     
     atomGroupParsed = false;
     helixGroupParsed = false;
@@ -88,8 +89,8 @@ string CifStructure::getTag(string name) {
         return residueNum;
     } else if (name == "atom id") {
         return atomId;
-    } else if (name == "alt id") {
-        return atomAltId;
+    } else if (name == "residue ins") {
+        return residueIns;
     } else if (name == "x") {
         return x;
     } else if (name == "y") {
@@ -98,8 +99,8 @@ string CifStructure::getTag(string name) {
         return z;
     } else if (name == "bfac") {
         return tempFactor;
-    } else if (name == "bfac") {
-        return tempFactor;
+    } else if (name == "atom name") {
+        return atomName;
     } else if (name == "residue name") {
         return residueName;
     } else if (name == "helix") {
@@ -138,13 +139,19 @@ string CifStructure::getTag(string name) {
  * @return field column number
  */
 int CifStructure::getGroupColumnNumber(string name, string field) {
+    output << "IN getGroupColumnNumber" << endl;
     int col = -1;
-    vector<string> group = getGroup(name);
-    vector<string>::iterator it;
-    it = find(group.begin(), group.end(), getTag(field));
-    if (it != group.end()) {
-        col = it - group.begin();
+    vector<string>& group = getGroup(name);
+    string tag = getTag(field);
+    output << "tag: " << tag << endl;
+    for (vector<string>::iterator it = group.begin(); it != group.end(); it++) {
+	//output << "it: " << *it << endl;
+	if (*it == tag) {
+	    col = it - group.begin();
+	    break;
+	}
     }
+    output << "OUT getGroupColumnNumber" << endl;
     return col;
 }
 
@@ -155,7 +162,8 @@ int CifStructure::getGroupColumnNumber(string name, string field) {
  * @param columnNum number of column
  * @return field at columnNum column
  */
-string CifStructure::getGroupField(string name, string line, int columnNum) {
+string CifStructure::getGroupField(string name, string& line, int columnNum) {
+    output << "IN getGroupField" << endl;
     istringstream iss(line);
     vector<string>& group = getGroup(name);
     vector<string> fields;
@@ -163,15 +171,24 @@ string CifStructure::getGroupField(string name, string line, int columnNum) {
     for (unsigned int i = 0; i < group.size(); i++) {
         iss >> field;
         fields.push_back(field);
+	//output << "field: " << field << endl;
     }
-    return fields[columnNum];
+    if (columnNum != -1) {
+	output << "field: " << fields[columnNum] << endl;
+	output << "OUT getGroupField" << endl;
+	return fields[columnNum];
+    } else {
+	output << "OUT getGroupField" << endl;
+	return "?";
+    }
 }
 
 /**
  * parses group of CIF fields and creates a vector with columns positions
  * @param name name of the group 
  */
-void CifStructure::parseGroup(string name, string line) {
+void CifStructure::parseGroup(string name, string& line) {
+    output << "IN parseGroup" << endl;
     bool found = false;
     vector<string>& group = getGroup(name);
 
@@ -180,9 +197,12 @@ void CifStructure::parseGroup(string name, string line) {
         while (input) {
             string groupName(getTag(name));
             size_t pos = line.find(groupName);
+	    output << "line: " << line << endl;
+	    output << "name: " << groupName << ", pos: " << pos << endl;
             if (pos != string::npos) {
                 group.push_back(line.substr(pos + groupName.size(),
 			line.size() - groupName.size()));
+		//output << "field: " << group.back() << endl;
                 found = true;
             } else {
                 found = false;
@@ -190,6 +210,7 @@ void CifStructure::parseGroup(string name, string line) {
 
             // exit the loop when the research of the fields is completed
             if (!found && group.size() > 1) {
+		output << name << " group" << " parsed" << endl;
                 setParsedFlag(name);
                 break;
             }
@@ -197,6 +218,7 @@ void CifStructure::parseGroup(string name, string line) {
             line = readLine(input);
         }
     }
+    output << "OUT parseGroup" << endl;
 }
 
 /**
@@ -237,5 +259,13 @@ bool CifStructure::isGroupParsed(string name) {
         return sheetOrderGroupParsed;
     } else if (name == "sheet range") {
         return sheetRangeGroupParsed;
+    }
+}
+
+void CifStructure::printGroup(string name) {
+    vector<string>& group = getGroup(name);
+    
+    for (vector<string>::iterator it = group.begin(); it != group.end(); it++) {
+	output << *it << endl;
     }
 }

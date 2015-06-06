@@ -26,17 +26,17 @@ using namespace std;
 
 // CONSTRUCTORS/DESTRUCTOR:
 
-CifLoader::CifLoader(istream& _input, bool _permissive, bool _noHAtoms,
+CifLoader::CifLoader(istream& _input, ostream& output, bool _permissive, bool _noHAtoms,
         bool _noHetAtoms, bool _noSecondary, bool _noConnection, bool _noWater,
         bool _verb, bool _allChains, string _NULL, bool _onlyMetal,
         bool _noNucleotideChains ) :
-input(_input), permissive(_permissive), valid(true), noHAtoms(_noHAtoms),
+input(_input), output(output), permissive(_permissive), valid(true), noHAtoms(_noHAtoms),
 noHetAtoms(_noHetAtoms), noSecondary(_noSecondary), noConnection(_noConnection),
 noWater(_noWater), verbose(_verb), allChains(_allChains), chain(' '),
 model(999), altAtom('A'), helixCode(_NULL),
 //sheetCode(_NULL), helixData(), sheetData(), onlyMetalHetAtoms(_onlyMetal), 
 sheetCode(_NULL), onlyMetalHetAtoms(_onlyMetal), noNucleotideChains(_noNucleotideChains) {
-    cif = new CifStructure(_input);
+    cif = new CifStructure(_input, output);
 }
 
 CifLoader::~CifLoader() {
@@ -113,6 +113,7 @@ unsigned int CifLoader::getMaxModels() {
  * @return  all available chain IDs
  */
 vector<char> CifLoader::getAllChains() {
+    output << "IN getAllChains" << endl;
     vector<char> res;
     char lastChain = ' ';
 
@@ -124,18 +125,24 @@ vector<char> CifLoader::getAllChains() {
     unsigned int modelNum = 0;
 
     cif->parseGroup("atom", atomLine);
+    cif->printGroup("atom");
+    output << "line: " << atomLine << endl;
     int modelCol = cif->getGroupColumnNumber("atom", "model");
     int chainCol = cif->getGroupColumnNumber("atom", "chain");
+    output << "model: " << modelCol << ", chain: " << chainCol << endl;
 
     while (input) {
         if (atomLine.substr(0, 4) == "ATOM") {
             modelNum = stoiDEF(cif->getGroupField("atom", atomLine, modelCol));
+	    output << "riga: " << atomLine << endl;
+	    output << "numero modello: " << modelNum << endl;
             // only consider first model: others duplicate chain IDs
             if (modelNum > 1) {
                 break;
             }
             // check for new chains containing amino acids
             char id = (cif->getGroupField("atom", atomLine, chainCol).c_str())[0];
+	    output << "id" << endl;
             if (id != lastChain) {
                 lastChain = id;
                 res.push_back(id);
@@ -143,6 +150,7 @@ vector<char> CifLoader::getAllChains() {
         }
         atomLine = readLine(input);
     }
+    output << "OUT getAllChains" << endl;
     return res;
 }
 
@@ -246,6 +254,7 @@ CifLoader::loadSpacer(Spacer& sp){
  */
 int
 CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa) {
+    output << "IN parseCifline" << endl;
     // get atom id
     int atNum = stoiDEF(cif->getGroupField("atom", atomLine,
             cif->getGroupColumnNumber("atom", "atom id")));
@@ -253,7 +262,7 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
     int aaNum = stoiDEF(cif->getGroupField("atom", atomLine,
             cif->getGroupColumnNumber("atom", "residue num")));
     char altAaID = cif->getGroupField("atom", atomLine,
-            cif->getGroupColumnNumber("atom", "alt id")).c_str()[0]; // "Code for insertion of residues"
+            cif->getGroupColumnNumber("atom", "residue ins")).c_str()[0]; // "Code for insertion of residues"
 
     // get x, y, z coordinates
     vgVector3<double> coord;
@@ -313,7 +322,7 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
         if (aaType != "ACE") {
             // DEBUG: it would be nice to load also alternative atoms
             // skip alternative atoms, 
-            if (altAaID != ' ') {
+            if (altAaID != '?') {
                 if (verbose)
                     cout << "Warning: Skipping extraneous amino acid entry "
                         << aaNum << " " << atNum << " " << altAaID << ".\n";
@@ -336,6 +345,7 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
         }
     }
     delete at;
+    output << "OUT parseCifline" << endl;
     return aaNum;
 }
 
@@ -350,7 +360,8 @@ void CifLoader::loadProtein(Protein& prot) {
 
     if (chainList.size() == 0) {
         if (verbose)
-            cout << "Warning: Missing chain ID in the CIF, assuming the same chain for the entire file.\n";
+            cout << "Warning: Missing chain ID in the CIF,"
+		    "assuming the same chain for the entire file.\n";
         chainList.push_back(char(' '));
     }
 
@@ -398,6 +409,7 @@ void CifLoader::loadProtein(Protein& prot) {
 
             string atomLine;
             atomLine = readLine(input);
+	    output << "atomLine: " << atomLine << endl;
 
             int aaNum = -100000; // infinite negative
             int oldAaNum = -100000;
@@ -418,35 +430,51 @@ void CifLoader::loadProtein(Protein& prot) {
                         && (name == "")) {
                     name = atomLine;
                     sp->setType(name);
-                }// read helix entry
+                }
+		// read helix entry
                 else if (atomLine.find(cif->getTag("helix")) != string::npos) {
                     cif->parseGroup("helix", atomLine);
-                    int colS = cif->getGroupColumnNumber("helix", "helix start");
-                    int colE = cif->getGroupColumnNumber("helix", "helix end");
+		    
+		    while (atomLine != "# ") {
+			int colS = cif->getGroupColumnNumber("helix", "helix start");
+			int colE = cif->getGroupColumnNumber("helix", "helix end");
+			start = stoiDEF(cif->getGroupField("helix", atomLine, colS));
+			end = stoiDEF(cif->getGroupField("helix", atomLine, colE));
+			helixData.push_back(pair<const int, int>(start, end));
 
-                    start = stoiDEF(cif->getGroupField("helix", atomLine, colS));
-                    end = stoiDEF(cif->getGroupField("helix", atomLine, colE));
-
-                    helixData.push_back(pair<const int, int>(start, end));
-                    int colC = cif->getGroupColumnNumber("helix", "helix chain");
-                    helixCode += cif->getGroupField("helix", atomLine, colC);
-                }// read sheet entry
+			int colC = cif->getGroupColumnNumber("helix", "helix chain");
+			helixCode += cif->getGroupField("helix", atomLine, colC);
+			
+			char s[256];
+			input.getline(s, 256);
+			atomLine.assign(s);
+			output << "atomLine: " << atomLine << endl;
+		    } 
+                }
+		// read sheet entry
                 else if (atomLine.find(cif->getTag("sheet")) != string::npos) {
                     cif->parseGroup("sheet range", atomLine);
-                    int colS = cif->getGroupColumnNumber("sheet range", "sheet start");
-                    int colE = cif->getGroupColumnNumber("sheet range", "sheet start");
+		    
+		    while (atomLine != "# ") {
+			int colS = cif->getGroupColumnNumber("sheet range", "sheet start");
+			int colE = cif->getGroupColumnNumber("sheet range", "sheet start");
+			start = stoiDEF(cif->getGroupField("sheet range", atomLine, colS));
+			end = stoiDEF(cif->getGroupField("sheet range", atomLine, colE));
+			sheetData.push_back(pair<const int, int>(start, end));
 
-                    start = stoiDEF(cif->getGroupField("sheet range", atomLine, colS));
-                    end = stoiDEF(cif->getGroupField("sheet range", atomLine, colE));
+			int colC = cif->getGroupColumnNumber("sheet range", "sheet chain");
+			sheetCode += cif->getGroupField("sheet range", atomLine, colC);
 
-                    sheetData.push_back(pair<const int, int>(start, end));
-                    int colC = cif->getGroupColumnNumber("sheet range", "sheet chain");
-                    sheetCode += cif->getGroupField("sheet range", atomLine, colC);
-                }// Parse one line of the "ATOM" and "HETATM" fields
+			char s[256];
+			input.getline(s, 256);
+			atomLine.assign(s);
+			output << "atomLine: " << atomLine << endl;
+		    }
+                }
+		// Parse one line of the "ATOM" and "HETATM" fields
                 else if (atomLine.substr(0, 6) == "ATOM  " ||
                         atomLine.substr(0, 6) == "HETATM") {
                     tag = atomLine.substr(0, 6);
-                    cif->parseGroup("atom", atomLine);
 
                     // Control model number
                     int colM = cif->getGroupColumnNumber("atom", "model");
@@ -506,6 +534,7 @@ void CifLoader::loadProtein(Protein& prot) {
                     } // end chain check
                 }
                 atomLine = readLine(input);
+		output << "atomLine: " << atomLine << endl;
             } while (input);
 
             /*
