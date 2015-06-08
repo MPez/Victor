@@ -16,7 +16,7 @@ using namespace Victor;
 using namespace Victor::Biopool;
 using namespace std;
 
-CifStructure::CifStructure(istream& input, ostream& output) : 
+CifStructure::CifStructure(istream& input, ostream& output) :
 input(input), output(output) {
     header = "_struct_keywords.pdbx_keywords";
     model = "pdbx_PDB_model_num ";
@@ -42,7 +42,7 @@ input(input), output(output) {
     sheetStart = "beg_auth_seq_id ";
     sheetEnd = "end_auth_seq_id ";
     sheetChainId = "beg_auth_asym_id ";
-    
+
     atomGroupParsed = false;
     helixGroupParsed = false;
     sheetGroupParsed = false;
@@ -61,17 +61,17 @@ CifStructure::~CifStructure() {
  */
 vector<string>& CifStructure::getGroup(string name) {
     if (name == "atom") {
-        return atomGroup;
+	return atomGroup;
     } else if (name == "helix") {
-        return helixGroup;
+	return helixGroup;
     } else if (name == "sheet") {
-        return sheetGroup;
+	return sheetGroup;
     } else if (name == "sheet order") {
-        return sheetOrderGroup;
+	return sheetOrderGroup;
     } else if (name == "sheet range") {
-        return sheetRangeGroup;
+	return sheetRangeGroup;
     } else if (name == "sheet hbond") {
-        return sheetHbondGroup;
+	return sheetHbondGroup;
     }
 }
 
@@ -82,53 +82,53 @@ vector<string>& CifStructure::getGroup(string name) {
  */
 string CifStructure::getTag(string name) {
     if (name == "header") {
-        return header;
+	return header;
     } else if (name == "atom") {
-        return atom;
+	return atom;
     } else if (name == "residue num") {
-        return residueNum;
+	return residueNum;
     } else if (name == "atom id") {
-        return atomId;
+	return atomId;
     } else if (name == "residue ins") {
-        return residueIns;
+	return residueIns;
     } else if (name == "x") {
-        return x;
+	return x;
     } else if (name == "y") {
-        return y;
+	return y;
     } else if (name == "z") {
-        return z;
+	return z;
     } else if (name == "bfac") {
-        return tempFactor;
+	return tempFactor;
     } else if (name == "atom name") {
-        return atomName;
+	return atomName;
     } else if (name == "residue name") {
-        return residueName;
+	return residueName;
     } else if (name == "helix") {
-        return helix;
+	return helix;
     } else if (name == "helix start") {
-        return helixStart;
+	return helixStart;
     } else if (name == "helix end") {
-        return helixEnd;
+	return helixEnd;
     } else if (name == "helix chain") {
-        return helixChainId;
+	return helixChainId;
     } else if (name == "model") {
-        return model;
+	return model;
     } else if (name == "chain") {
-        return chain;
+	return chain;
     } else if (name == "sheet") {
-        return sheet;
+	return sheet;
     } else if (name == "sheet order") {
-        return sheetOrder;
+	return sheetOrder;
     } else if (name == "sheet range") {
-        return sheetRange;
+	return sheetRange;
     } else if (name == "sheet hbond") {
-        return sheetHbond;
+	return sheetHbond;
     } else if (name == "sheet start") {
-        return sheetStart;
+	return sheetStart;
     } else if (name == "sheet end") {
-        return sheetEnd;
+	return sheetEnd;
     } else if (name == "sheet chain") {
-        return sheetChainId;
+	return sheetChainId;
     }
 }
 
@@ -139,11 +139,11 @@ string CifStructure::getTag(string name) {
  * @return field column number
  */
 int CifStructure::getGroupColumnNumber(string name, string field) {
-    output << "IN getGroupColumnNumber" << endl;
+    //output << "IN getGroupColumnNumber" << endl;
     int col = -1;
     vector<string>& group = getGroup(name);
     string tag = getTag(field);
-    output << "tag: " << tag << endl;
+    //output << "tag: " << tag << endl;
     for (vector<string>::iterator it = group.begin(); it != group.end(); it++) {
 	//output << "it: " << *it << endl;
 	if (*it == tag) {
@@ -151,7 +151,7 @@ int CifStructure::getGroupColumnNumber(string name, string field) {
 	    break;
 	}
     }
-    output << "OUT getGroupColumnNumber" << endl;
+    //output << "OUT getGroupColumnNumber" << endl;
     return col;
 }
 
@@ -163,22 +163,22 @@ int CifStructure::getGroupColumnNumber(string name, string field) {
  * @return field at columnNum column
  */
 string CifStructure::getGroupField(string name, string& line, int columnNum) {
-    output << "IN getGroupField" << endl;
+    //output << "IN getGroupField" << endl;
     istringstream iss(line);
     vector<string>& group = getGroup(name);
     vector<string> fields;
     string field;
     for (unsigned int i = 0; i < group.size(); i++) {
-        iss >> field;
-        fields.push_back(field);
+	iss >> field;
+	fields.push_back(field);
 	//output << "field: " << field << endl;
     }
     if (columnNum != -1) {
-	output << "field: " << fields[columnNum] << endl;
-	output << "OUT getGroupField" << endl;
+	//output << "field: " << fields[columnNum] << endl;
+	//output << "OUT getGroupField" << endl;
 	return fields[columnNum];
     } else {
-	output << "OUT getGroupField" << endl;
+	//output << "OUT getGroupField" << endl;
 	return "?";
     }
 }
@@ -188,37 +188,37 @@ string CifStructure::getGroupField(string name, string& line, int columnNum) {
  * @param name name of the group 
  */
 void CifStructure::parseGroup(string name, string& line) {
-    output << "IN parseGroup" << endl;
+    //output << "IN parseGroup" << endl;
     bool found = false;
     vector<string>& group = getGroup(name);
 
     // exit the function if the group name is already parsed
     if (!isGroupParsed(name)) {
-        while (input) {
-            string groupName(getTag(name));
-            size_t pos = line.find(groupName);
-	    output << "line: " << line << endl;
-	    output << "name: " << groupName << ", pos: " << pos << endl;
-            if (pos != string::npos) {
-                group.push_back(line.substr(pos + groupName.size(),
+	while (input) {
+	    string groupName(getTag(name));
+	    size_t pos = line.find(groupName);
+	    //output << "line: " << line << endl;
+	    //output << "name: " << groupName << ", pos: " << pos << endl;
+	    if (pos != string::npos) {
+		group.push_back(line.substr(pos + groupName.size(),
 			line.size() - groupName.size()));
 		//output << "field: " << group.back() << endl;
-                found = true;
-            } else {
-                found = false;
-            }
+		found = true;
+	    } else {
+		found = false;
+	    }
 
-            // exit the loop when the research of the fields is completed
-            if (!found && group.size() > 1) {
-		output << name << " group" << " parsed" << endl;
-                setParsedFlag(name);
-                break;
-            }
+	    // exit the loop when the research of the fields is completed
+	    if (!found && group.size() > 1) {
+		//output << name << " group" << " parsed" << endl;
+		setParsedFlag(name);
+		break;
+	    }
 
-            line = readLine(input);
-        }
+	    line = readLine(input);
+	}
     }
-    output << "OUT parseGroup" << endl;
+    //output << "OUT parseGroup" << endl;
 }
 
 /**
@@ -227,17 +227,17 @@ void CifStructure::parseGroup(string name, string& line) {
  */
 void CifStructure::setParsedFlag(string name) {
     if (name == "atom") {
-        atomGroupParsed = true;
+	atomGroupParsed = true;
     } else if (name == "helix") {
-        helixGroupParsed = true;
+	helixGroupParsed = true;
     } else if (name == "sheet") {
-        sheetGroupParsed = true;
-    } else if (name == "sheet hbound") {
-        sheetHboundgroupParsed = true;
+	sheetGroupParsed = true;
+    } else if (name == "sheet hbond") {
+	sheetHboundgroupParsed = true;
     } else if (name == "sheet order") {
-        sheetOrderGroupParsed = true;
+	sheetOrderGroupParsed = true;
     } else if (name == "sheet range") {
-        sheetRangeGroupParsed = true;
+	sheetRangeGroupParsed = true;
     }
 }
 
@@ -248,24 +248,123 @@ void CifStructure::setParsedFlag(string name) {
  */
 bool CifStructure::isGroupParsed(string name) {
     if (name == "atom") {
-        return atomGroupParsed;
+	return atomGroupParsed;
     } else if (name == "helix") {
-        return helixGroupParsed;
+	return helixGroupParsed;
     } else if (name == "sheet") {
-        return sheetGroupParsed;
-    } else if (name == "sheet hbound") {
-        return sheetHboundgroupParsed;
+	return sheetGroupParsed;
+    } else if (name == "sheet hbond") {
+	return sheetHboundgroupParsed;
     } else if (name == "sheet order") {
-        return sheetOrderGroupParsed;
+	return sheetOrderGroupParsed;
     } else if (name == "sheet range") {
-        return sheetRangeGroupParsed;
+	return sheetRangeGroupParsed;
     }
 }
 
 void CifStructure::printGroup(string name) {
     vector<string>& group = getGroup(name);
-    
-    for (vector<string>::iterator it = group.begin(); it != group.end(); it++) {
-	output << *it << endl;
+
+    output << "loop_" << endl;
+
+    if (isGroupParsed(group)) {
+	for (vector<string>::iterator it = group.begin(); it != group.end(); it++) {
+	    output << *it << endl;
+	}
+    } else {
+	if (name == "atom") {
+	    output << "_atom_site.group_PDB " << endl <<
+		    "_atom_site.id " << endl <<
+		    "_atom_site.type_symbol " << endl <<
+		    "_atom_site.label_atom_id " << endl <<
+		    "_atom_site.label_alt_id " << endl <<
+		    "_atom_site.label_comp_id " << endl <<
+		    "_atom_site.label_asym_id " << endl <<
+		    "_atom_site.label_entity_id " << endl <<
+		    "_atom_site.label_seq_id " << endl <<
+		    "_atom_site.pdbx_PDB_ins_code " << endl <<
+		    "_atom_site.Cartn_x " << endl <<
+		    "_atom_site.Cartn_y " << endl <<
+		    "_atom_site.Cartn_z " << endl <<
+		    "_atom_site.occupancy " << endl <<
+		    "_atom_site.B_iso_or_equiv " << endl <<
+		    "_atom_site.Cartn_x_esd " << endl <<
+		    "_atom_site.Cartn_y_esd " << endl <<
+		    "_atom_site.Cartn_z_esd " << endl <<
+		    "_atom_site.occupancy_esd " << endl <<
+		    "_atom_site.B_iso_or_equiv_esd " << endl <<
+		    "_atom_site.pdbx_formal_charge " << endl <<
+		    "_atom_site.auth_seq_id " << endl <<
+		    "_atom_site.auth_comp_id " << endl <<
+		    "_atom_site.auth_asym_id " << endl <<
+		    "_atom_site.auth_atom_id " << endl <<
+		    "_atom_site.pdbx_PDB_model_num " << endl;
+	} else if (name == "helix") {
+	    output << "_struct_conf.conf_type_id " << endl <<
+		    "_struct_conf.id " << endl <<
+		    "_struct_conf.pdbx_PDB_helix_id " << endl <<
+		    "_struct_conf.beg_label_comp_id " << endl <<
+		    "_struct_conf.beg_label_asym_id " << endl <<
+		    "_struct_conf.beg_label_seq_id " << endl <<
+		    "_struct_conf.pdbx_beg_PDB_ins_code " << endl <<
+		    "_struct_conf.end_label_comp_id " << endl <<
+		    "_struct_conf.end_label_asym_id " << endl <<
+		    "_struct_conf.end_label_seq_id " << endl <<
+		    "_struct_conf.pdbx_end_PDB_ins_code " << endl <<
+		    "_struct_conf.beg_auth_comp_id " << endl <<
+		    "_struct_conf.beg_auth_asym_id " << endl <<
+		    "_struct_conf.beg_auth_seq_id " << endl <<
+		    "_struct_conf.end_auth_comp_id " << endl <<
+		    "_struct_conf.end_auth_asym_id " << endl <<
+		    "_struct_conf.end_auth_seq_id " << endl <<
+		    "_struct_conf.pdbx_PDB_helix_class " << endl <<
+		    "_struct_conf.details " << endl <<
+		    "_struct_conf.pdbx_PDB_helix_length " << endl;
+	} else if (name == "sheet") {
+	    output << "_struct_sheet.id " << endl <<
+		    "_struct_sheet.type " << endl <<
+		    "_struct_sheet.number_strands " << endl <<
+		    "_struct_sheet.details " << endl;
+	} else if (name == "sheet range") {
+	    output << "_struct_sheet_range.sheet_id " << endl <<
+		    "_struct_sheet_range.id " << endl <<
+		    "_struct_sheet_range.beg_label_comp_id " << endl <<
+		    "_struct_sheet_range.beg_label_asym_id " << endl <<
+		    "_struct_sheet_range.beg_label_seq_id " << endl <<
+		    "_struct_sheet_range.pdbx_beg_PDB_ins_code " << endl <<
+		    "_struct_sheet_range.end_label_comp_id " << endl <<
+		    "_struct_sheet_range.end_label_asym_id " << endl <<
+		    "_struct_sheet_range.end_label_seq_id " << endl <<
+		    "_struct_sheet_range.pdbx_end_PDB_ins_code " << endl <<
+		    "_struct_sheet_range.symmetry " << endl <<
+		    "_struct_sheet_range.beg_auth_comp_id " << endl <<
+		    "_struct_sheet_range.beg_auth_asym_id " << endl <<
+		    "_struct_sheet_range.beg_auth_seq_id " << endl <<
+		    "_struct_sheet_range.end_auth_comp_id " << endl <<
+		    "_struct_sheet_range.end_auth_asym_id " << endl <<
+		    "_struct_sheet_range.end_auth_seq_id " << endl;
+	} else if (name = "sheet hbond") {
+	    output << "_pdbx_struct_sheet_hbond.sheet_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_id_1 " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_id_2 " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_label_atom_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_label_comp_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_label_asym_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_label_seq_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_PDB_ins_code " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_auth_atom_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_auth_comp_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_auth_asym_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_1_auth_seq_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_label_atom_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_label_comp_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_label_asym_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_label_seq_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_PDB_ins_code " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_auth_atom_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_auth_comp_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_auth_asym_id " << endl <<
+		    "_pdbx_struct_sheet_hbond.range_2_auth_seq_id " << endl;
+	}
     }
 }
