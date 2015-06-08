@@ -267,7 +267,7 @@ void CifStructure::printGroup(string name) {
 
     output << "loop_" << endl;
 
-    if (isGroupParsed(group)) {
+    if (isGroupParsed(name)) {
 	for (vector<string>::iterator it = group.begin(); it != group.end(); it++) {
 	    output << *it << endl;
 	}
