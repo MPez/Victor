@@ -125,7 +125,6 @@ vector<char> CifLoader::getAllChains() {
     unsigned int modelNum = 0;
 
     cif->parseGroup("atom", atomLine);
-    cif->printGroup("atom");
     //output << "line: " << atomLine << endl;
     int modelCol = cif->getGroupColumnNumber("atom", "model");
     int chainCol = cif->getGroupColumnNumber("atom", "chain");
@@ -193,13 +192,15 @@ bool CifLoader::setBonds(Spacer& sp) {
  * @return  bool
  */
 bool CifLoader::inSideChain(const AminoAcid& aa, const Atom& at) {
-    if (isBackboneAtom(at.getCode()))
+    if (isBackboneAtom(at.getCode())) {
         return false;
+    }
     if ((at.getType() == "H") || (at.getType() == "HN")
             || ((at.getType() == "HA") && (!aa.isMember(HA)))
             || (at.getType() == "1HA") || (at.getType() == "1H")
-            || (at.getType() == "2H") || (at.getType() == "3H"))
+            || (at.getType() == "2H") || (at.getType() == "3H")) {
         return false; // special case for GLY H (code HA)
+    }
     return true; // rest of aminoacid is its sidechain
 }
 
@@ -218,21 +219,27 @@ void CifLoader::assignSecondary(Spacer& sp) {
         if (helixCode[i] == chain) {
             for (int j = helixData[i].first; j <= const_cast<int&> (helixData[i].second); j++) {
                 // important: keep ifs separated to avoid errors
-                if (j < sp.maxPdbNumber())
-                    if (!sp.isGap(sp.getIndexFromPdbNumber(j)))
+                if (j < sp.maxPdbNumber()) {
+                    if (!sp.isGap(sp.getIndexFromPdbNumber(j))) {
                         sp.getAmino(sp.getIndexFromPdbNumber(j)).setState(HELIX);
+		    }
+		}
             }
         }
     }
 
-    for (unsigned int i = 0; i < sheetData.size(); i++)
-        if (sheetCode[i] == chain)
+    for (unsigned int i = 0; i < sheetData.size(); i++) {
+        if (sheetCode[i] == chain) {
             for (int j = sheetData[i].first; j <= const_cast<int&> (sheetData[i].second); j++) {
                 // important: keep ifs separated to avoid errors
-                if (j < sp.maxPdbNumber())
-                    if (!sp.isGap(sp.getIndexFromPdbNumber(j)))
+                if (j < sp.maxPdbNumber()) {
+                    if (!sp.isGap(sp.getIndexFromPdbNumber(j))) {
                         sp.getAmino(sp.getIndexFromPdbNumber(j)).setState(STRAND);
+		    }
+		}
             }
+	}
+    }
 }
 
 /*
@@ -261,8 +268,9 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
     // get residue number
     int aaNum = stoiDEF(cif->getGroupField("atom", atomLine,
             cif->getGroupColumnNumber("atom", "residue num")));
+    // get code for insertion of residues
     char altAaID = cif->getGroupField("atom", atomLine,
-            cif->getGroupColumnNumber("atom", "residue ins")).c_str()[0]; // "Code for insertion of residues"
+            cif->getGroupColumnNumber("atom", "residue ins")).c_str()[0]; 
 
     // get x, y, z coordinates
     vgVector3<double> coord;
@@ -278,7 +286,7 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
     int colBfac = cif->getGroupColumnNumber("atom", "bfac");
     if (colBfac != -1) {
         string sbfac = cif->getGroupField("atom", atomLine, colBfac);
-        if (sbfac != "?" || sbfac != ".") {
+        if (sbfac != "?" && sbfac != ".") {
             bfac = stodDEF(sbfac);
         }
     }
@@ -322,7 +330,7 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
         if (aaType != "ACE") {
             // DEBUG: it would be nice to load also alternative atoms
             // skip alternative atoms, 
-            if (altAaID != '?') {
+            if (altAaID != '?' && altAaID != '.') {
                 if (verbose)
                     cout << "Warning: Skipping extraneous amino acid entry "
                         << aaNum << " " << atNum << " " << altAaID << ".\n";
@@ -388,7 +396,8 @@ void CifLoader::loadProtein(Protein& prot) {
             if (chain == ' ') {
                 loadChain = true;
                 chain = '#';
-            }// Load only selected chain
+            }
+	    // Load only selected chain
             else if (chainList[i] == chain) {
                 loadChain = true;
                 chain = '#';
@@ -435,35 +444,35 @@ void CifLoader::loadProtein(Protein& prot) {
                 else if (atomLine.find(cif->getTag("helix")) != string::npos) {
                     cif->parseGroup("helix", atomLine);
 		    
-		    while (atomLine != "# ") {
-			int colS = cif->getGroupColumnNumber("helix", "helix start");
-			int colE = cif->getGroupColumnNumber("helix", "helix end");
-			start = stoiDEF(cif->getGroupField("helix", atomLine, colS));
-			end = stoiDEF(cif->getGroupField("helix", atomLine, colE));
+		    while (atomLine != "# " && input) {
+			start = stoiDEF(cif->getGroupField("helix", atomLine,
+				cif->getGroupColumnNumber("helix", "helix start")));
+			end = stoiDEF(cif->getGroupField("helix", atomLine, 
+				cif->getGroupColumnNumber("helix", "helix end")));
 			helixData.push_back(pair<const int, int>(start, end));
 
-			int colC = cif->getGroupColumnNumber("helix", "helix chain");
-			helixCode += cif->getGroupField("helix", atomLine, colC);
+			helixCode += cif->getGroupField("helix", atomLine,
+				cif->getGroupColumnNumber("helix", "helix chain"));
 			
 			char s[256];
 			input.getline(s, 256);
 			atomLine.assign(s);
 			//output << "atomLine: " << atomLine << endl;
-		    } 
+		    }
                 }
 		// read sheet entry
                 else if (atomLine.find(cif->getTag("sheet range")) != string::npos) {
                     cif->parseGroup("sheet range", atomLine);
 		    
-		    while (atomLine != "# ") {
-			int colS = cif->getGroupColumnNumber("sheet range", "sheet start");
-			int colE = cif->getGroupColumnNumber("sheet range", "sheet start");
-			start = stoiDEF(cif->getGroupField("sheet range", atomLine, colS));
-			end = stoiDEF(cif->getGroupField("sheet range", atomLine, colE));
+		    while (atomLine != "# " && input) {
+			start = stoiDEF(cif->getGroupField("sheet range", atomLine,
+				cif->getGroupColumnNumber("sheet range", "sheet start")));
+			end = stoiDEF(cif->getGroupField("sheet range", atomLine,
+				cif->getGroupColumnNumber("sheet range", "sheet end")));
 			sheetData.push_back(pair<const int, int>(start, end));
 
-			int colC = cif->getGroupColumnNumber("sheet range", "sheet chain");
-			sheetCode += cif->getGroupField("sheet range", atomLine, colC);
+			sheetCode += cif->getGroupField("sheet range", atomLine,
+				cif->getGroupColumnNumber("sheet range", "sheet chain"));
 
 			char s[256];
 			input.getline(s, 256);
@@ -477,8 +486,8 @@ void CifLoader::loadProtein(Protein& prot) {
                     tag = atomLine.substr(0, 6);
 
                     // Control model number
-                    int colM = cif->getGroupColumnNumber("atom", "model");
-                    readingModel = stouiDEF(cif->getGroupField("atom", atomLine, colM));
+                    readingModel = stouiDEF(cif->getGroupField("atom", atomLine,
+			    cif->getGroupColumnNumber("atom", "model")));
                     if (readingModel > model)
                         break;
                     // Get only the first model if not specified
@@ -486,13 +495,13 @@ void CifLoader::loadProtein(Protein& prot) {
                         model = readingModel;
                     }
 
-                    int colC = cif->getGroupColumnNumber("atom", "chain");
-                    char chainID = cif->getGroupField("atom", atomLine, colC).c_str()[0];
+                    char chainID = cif->getGroupField("atom", atomLine,
+			    cif->getGroupColumnNumber("atom", "chain")).c_str()[0];
 
                     if (chainList[i] == chainID) {
                         if ((model == 999) || (model == readingModel)) {
-                            int colAa = cif->getGroupColumnNumber("atom", "residue num");
-                            aaNum = stoiDEF(cif->getGroupField("atom", atomLine, colAa));
+                            aaNum = stoiDEF(cif->getGroupField("atom", atomLine,
+				    cif->getGroupColumnNumber("atom", "residue num")));
 
                             // Insert the Ligand object into LigandSet
                             if (aaNum != oldAaNum) {
@@ -595,8 +604,9 @@ void CifLoader::loadProtein(Protein& prot) {
                         }
                     }
                 }
-                if (verbose)
+                if (verbose) {
                     cout << "Removed incomplete residues\n";
+		}
                 // connect aminoacids
                 if (!noConnection) {
                     if (!setBonds(*sp)) { // connect atoms...
@@ -616,9 +626,9 @@ void CifLoader::loadProtein(Protein& prot) {
                 vgVector3<double> tmp(0.0, 0.0, 0.0);
                 sp->getAmino(0)[N].setTrans(tmp);
                 sp->getAmino(0).adjustLeadingN();
-                if (verbose)
+                if (verbose) {
                     cout << "Fixed leading N atom\n";
-
+		}
                 // Add H atoms
                 if (!noHAtoms) {
                     for (unsigned int j = 0; j < sp->sizeAmino(); j++) {
@@ -656,7 +666,8 @@ void CifLoader::loadProtein(Protein& prot) {
                 cout << "Loaded AminoAcids: " << sp->size() << "\n";
             }
             if (!(noHetAtoms)) {
-                if (ls->sizeLigand() > 0) { //insertion only if LigandSet is not empty
+		//insertion only if LigandSet is not empty
+                if (ls->sizeLigand() > 0) { 
                     pol->insertComponent(ls);
                     if (verbose) {
                         cout << "Loaded Ligands: " << ls->size() << "\n";

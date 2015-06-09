@@ -139,19 +139,15 @@ string CifStructure::getTag(string name) {
  * @return field column number
  */
 int CifStructure::getGroupColumnNumber(string name, string field) {
-    //output << "IN getGroupColumnNumber" << endl;
     int col = -1;
     vector<string>& group = getGroup(name);
     string tag = getTag(field);
-    //output << "tag: " << tag << endl;
     for (vector<string>::iterator it = group.begin(); it != group.end(); it++) {
-	//output << "it: " << *it << endl;
 	if (*it == tag) {
 	    col = it - group.begin();
 	    break;
 	}
     }
-    //output << "OUT getGroupColumnNumber" << endl;
     return col;
 }
 
@@ -163,7 +159,6 @@ int CifStructure::getGroupColumnNumber(string name, string field) {
  * @return field at columnNum column
  */
 string CifStructure::getGroupField(string name, string& line, int columnNum) {
-    //output << "IN getGroupField" << endl;
     istringstream iss(line);
     vector<string>& group = getGroup(name);
     vector<string> fields;
@@ -171,14 +166,10 @@ string CifStructure::getGroupField(string name, string& line, int columnNum) {
     for (unsigned int i = 0; i < group.size(); i++) {
 	iss >> field;
 	fields.push_back(field);
-	//output << "field: " << field << endl;
     }
     if (columnNum != -1) {
-	//output << "field: " << fields[columnNum] << endl;
-	//output << "OUT getGroupField" << endl;
 	return fields[columnNum];
     } else {
-	//output << "OUT getGroupField" << endl;
 	return "?";
     }
 }
@@ -188,7 +179,6 @@ string CifStructure::getGroupField(string name, string& line, int columnNum) {
  * @param name name of the group 
  */
 void CifStructure::parseGroup(string name, string& line) {
-    //output << "IN parseGroup" << endl;
     bool found = false;
     vector<string>& group = getGroup(name);
 
@@ -197,12 +187,9 @@ void CifStructure::parseGroup(string name, string& line) {
 	while (input) {
 	    string groupName(getTag(name));
 	    size_t pos = line.find(groupName);
-	    //output << "line: " << line << endl;
-	    //output << "name: " << groupName << ", pos: " << pos << endl;
 	    if (pos != string::npos) {
 		group.push_back(line.substr(pos + groupName.size(),
 			line.size() - groupName.size()));
-		//output << "field: " << group.back() << endl;
 		found = true;
 	    } else {
 		found = false;
@@ -210,15 +197,13 @@ void CifStructure::parseGroup(string name, string& line) {
 
 	    // exit the loop when the research of the fields is completed
 	    if (!found && group.size() > 1) {
-		//output << name << " group" << " parsed" << endl;
 		setParsedFlag(name);
 		break;
 	    }
-
+	    
 	    line = readLine(input);
 	}
     }
-    //output << "OUT parseGroup" << endl;
 }
 
 /**
@@ -343,7 +328,7 @@ void CifStructure::printGroup(string name) {
 		    "_struct_sheet_range.end_auth_comp_id " << endl <<
 		    "_struct_sheet_range.end_auth_asym_id " << endl <<
 		    "_struct_sheet_range.end_auth_seq_id " << endl;
-	} else if (name = "sheet hbond") {
+	} else if (name == "sheet hbond") {
 	    output << "_pdbx_struct_sheet_hbond.sheet_id " << endl <<
 		    "_pdbx_struct_sheet_hbond.range_id_1 " << endl <<
 		    "_pdbx_struct_sheet_hbond.range_id_2 " << endl <<
