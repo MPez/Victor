@@ -113,7 +113,6 @@ unsigned int CifLoader::getMaxModels() {
  * @return  all available chain IDs
  */
 vector<char> CifLoader::getAllChains() {
-    //output << "IN getAllChains" << endl;
     vector<char> res;
     char lastChain = ' ';
 
@@ -125,23 +124,18 @@ vector<char> CifLoader::getAllChains() {
     unsigned int modelNum = 0;
 
     cif->parseGroup("atom", atomLine);
-    //output << "line: " << atomLine << endl;
     int modelCol = cif->getGroupColumnNumber("atom", "model");
     int chainCol = cif->getGroupColumnNumber("atom", "chain");
-    //output << "model: " << modelCol << ", chain: " << chainCol << endl;
 
     while (input) {
         if (atomLine.substr(0, 4) == "ATOM") {
-            modelNum = stoiDEF(cif->getGroupField("atom", atomLine, modelCol));
-	    //output << "riga: " << atomLine << endl;
-	    //output << "numero modello: " << modelNum << endl;
+            modelNum = stoiDEF(cif->getGroupField("atom", atomLine, modelCol));;
             // only consider first model: others duplicate chain IDs
             if (modelNum > 1) {
                 break;
             }
             // check for new chains containing amino acids
             char id = (cif->getGroupField("atom", atomLine, chainCol).c_str())[0];
-	    //output << "id" << endl;
             if (id != lastChain) {
                 lastChain = id;
                 res.push_back(id);
@@ -149,7 +143,6 @@ vector<char> CifLoader::getAllChains() {
         }
         atomLine = readLine(input);
     }
-    //output << "OUT getAllChains" << endl;
     return res;
 }
 
@@ -261,7 +254,6 @@ CifLoader::loadSpacer(Spacer& sp){
  */
 int
 CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa) {
-    //output << "IN parseCifline" << endl;
     // get atom id
     int atNum = stoiDEF(cif->getGroupField("atom", atomLine,
             cif->getGroupColumnNumber("atom", "atom id")));
@@ -353,7 +345,6 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
         }
     }
     delete at;
-    //output << "OUT parseCifline" << endl;
     return aaNum;
 }
 
@@ -437,8 +428,7 @@ void CifLoader::loadProtein(Protein& prot) {
                 // read header entry
 		if (atomLine.find(cif->getTag("header")) != string::npos
                         && (name == "")) {
-                    name = atomLine;
-                    sp->setType(name);
+                    sp->setType(cif->getInlineField(atomLine));
                 }
 		// read helix entry
                 else if (atomLine.find(cif->getTag("helix")) != string::npos) {

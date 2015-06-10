@@ -71,6 +71,13 @@ namespace Victor {
             */
             string getGroupField(string name, string& line, int columnNum);
             
+	    /**
+	     * Returns the field present in the line
+             * @param line
+             * @return 
+             */
+	    string getInlineField(string& line);
+	    
             /**
             * Parses group of CIF fields and creates a vector with columns positions.
             * @param name name of the group 
@@ -95,6 +102,12 @@ namespace Victor {
              * @param name name of the group
              */
 	    void printGroup(string name);
+	    
+	    /**
+	     * Returns the input stream.
+             * @return input stream
+             */
+	    istream& getInput();
             
         private:
             // CIF file
@@ -143,6 +156,10 @@ namespace Victor {
             bool sheetRangeGroupParsed;
             bool sheetHboundgroupParsed;
         };
+	
+	inline istream& CifStructure::getInput() {
+	    return input;
+	}
     } // namespace Biopool
 } // namespace Victor 
 

@@ -18,7 +18,7 @@ using namespace std;
 
 CifStructure::CifStructure(istream& input, ostream& output) :
 input(input), output(output) {
-    header = "_struct_keywords.pdbx_keywords";
+    header = "_entry.id";
     model = "pdbx_PDB_model_num ";
     helix = "_struct_conf.";
     helixStart = "beg_auth_seq_id ";
@@ -55,7 +55,7 @@ CifStructure::~CifStructure() {
 }
 
 /**
- * returns the correct collection by group name
+ * Returns the correct collection by group name
  * @param name name of the CIF group
  * @return reference to the collection
  */
@@ -76,7 +76,7 @@ vector<string>& CifStructure::getGroup(string name) {
 }
 
 /**
- * returns the tag by name
+ * Returns the tag by name
  * @param name name of tag
  * @return CIF tag
  */
@@ -133,7 +133,7 @@ string CifStructure::getTag(string name) {
 }
 
 /**
- * returns the column number of the field
+ * Returns the column number of the field
  * @param name name of the group
  * @param field name of the field
  * @return field column number
@@ -152,7 +152,7 @@ int CifStructure::getGroupColumnNumber(string name, string field) {
 }
 
 /**
- * returns the field of the line at the columnNum column
+ * Returns the field of the line at the columnNum column
  * @param name name of the group
  * @param line line of the CIF
  * @param columnNum number of column
@@ -175,7 +175,19 @@ string CifStructure::getGroupField(string name, string& line, int columnNum) {
 }
 
 /**
- * parses group of CIF fields and creates a vector with columns positions
+* Returns the field present in the line
+* @param line line of the CIF
+* @return field of the line
+*/
+string CifStructure::getInlineField(string& line) {
+    istringstream iss(line);
+    string tag, field;
+    iss >> tag >> field;
+    return field;
+}
+
+/**
+ * Parses group of CIF fields and creates a vector with columns positions
  * @param name name of the group 
  */
 void CifStructure::parseGroup(string name, string& line) {
@@ -247,6 +259,10 @@ bool CifStructure::isGroupParsed(string name) {
     }
 }
 
+/**
+* Prints group records names into output stream.
+* @param name name of the group
+*/
 void CifStructure::printGroup(string name) {
     vector<string>& group = getGroup(name);
 

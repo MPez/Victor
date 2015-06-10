@@ -67,7 +67,7 @@ private:
 
     void testGetMaxModels() {
 	int max = cl->getMaxModels();
-	CPPUNIT_ASSERT_EQUAL(max, maxModel);
+	CPPUNIT_ASSERT_EQUAL(maxModel, max);
     }
 
     void testGetAllChains() {
@@ -83,38 +83,5 @@ private:
     ifstream* inFile;
     CifLoader* cl;
 };
-
-
-/*
-#include <cppunit/extensions/HelperMacros.h>
-#include "CifLoader.h"
-#include <fstream>
-
-using namespace::Victor::Biopool;
-using namespace::CppUnit;
-
-class TestCifLoader : public CPPUNIT_NS::TestFixture {
-    CPPUNIT_TEST_SUITE(TestCifLoader);
-
-    CPPUNIT_TEST(testGetMaxModels);
-    CPPUNIT_TEST(testGetAllChains);
-
-    CPPUNIT_TEST_SUITE_END();
-
-public:
-    TestCifLoader();
-    virtual ~TestCifLoader();
-    void setUp();
-    void tearDown();
-
-private:
-    void testGetMaxModels();
-    void testGetAllChains();
-    
-    CifLoader* cl;
-    int maxModel;
-    vector<char> chainIds;
-};
- */
 #endif	/* TESTCIFLOADER_H */
 
