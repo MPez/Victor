@@ -40,6 +40,7 @@ sheetCode(_NULL), onlyMetalHetAtoms(_onlyMetal), noNucleotideChains(_noNucleotid
 }
 
 CifLoader::~CifLoader() {
+    delete cif;
     PRINT_NAME;
 }
 
@@ -296,16 +297,36 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
         cerr << "--> " << atType << "\n";
         atType = "H";
     }
+    
+    // get asym id
+    char asymId = cif->getGroupField("atom", atomLine,
+	    cif->getGroupColumnNumber("atom", "atom asym")).c_str()[0];
 
+    // get entity id
+    int entityId = stoiDEF(cif->getGroupField("atom", atomLine,
+	    cif->getGroupColumnNumber("atom", "atom entity")));
+    
+    // get occupancy
+    double occ = stodDEF(cif->getGroupField("atom", atomLine,
+	    cif->getGroupColumnNumber("atom", "occupancy")));
+    
+    // get model
+    int model = stoiDEF(cif->getGroupField("atom", atomLine,
+	    cif->getGroupColumnNumber("atom", "model")));
+    
     // Initialize the Atom object
     Atom* at = new Atom();
     at->setNumber(atNum);
     at->setType(atType);
     at->setCoords(coord);
     at->setBFac(bfac);
+    at->setAsymId(asymId);
+    at->setEntityId(entityId);
+    at->setOccupancy(occ);
+    at->setModel(model);
 
     // Ligand object (includes DNA/RNA in "ATOM" field)
-    if ((tag == "HETATM") ||
+    if (tag == "HETATM" ||
             isKnownNucleotide(nucleotideThreeLetterTranslator(aaType))) {
         if (noWater) {
             if (!(aaType == "HOH")) {
@@ -317,11 +338,11 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
             lig->setType(aaType);
         }
     }// AminoAcid
-    else if ((tag == "ATOM  ")) {
+    else if (tag == "ATOM  ") {
         // skip N-terminal ACE groups
         if (aaType != "ACE") {
             // DEBUG: it would be nice to load also alternative atoms
-            // skip alternative atoms, 
+            // skip alternative atoms
             if (altAaID != '?' && altAaID != '.') {
                 if (verbose)
                     cout << "Warning: Skipping extraneous amino acid entry "

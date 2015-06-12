@@ -34,6 +34,13 @@ namespace Victor {
 	     * @param output output file stream
              */
             CifStructure(istream& input, ostream& output = cout);
+	    
+	    /**
+	     * Constructor
+             * @param output output file stream
+	     * @param input input file stream
+             */
+	    CifStructure(ostream& output);
             
             /**
              * Destructor
@@ -110,28 +117,42 @@ namespace Victor {
 	    istream& getInput();
             
         private:
+	    /**
+	     * Sets data members
+             */
+	    void setData();
+	    
             // CIF file
             istream& input;
 	    ostream& output;
 
             // CIF tags
             string header;
+	    
+	    // atom group
+            string atom;
+	    string atomId;
+	    string chain;
+	    string asymId;
+	    string entityId;
+	    string residueIns;
+	    string x;
+            string y;
+            string z;
+	    string occupancy;
+	    string tempFactor;
+            string residueNum;
+	    string residueName;
+            string atomName;
             string model;
-            string helix;
+	    
+	    // helix group
+	    string helix;
             string helixStart;
             string helixEnd;
             string helixChainId;
-            string atom;
-            string residueNum;
-            string atomId;
-            string residueIns;
-            string tempFactor;
-            string atomName;
-            string residueName;
-            string x;
-            string y;
-            string z;
-            string chain;
+	    
+	    // sheet group
             string sheet;
             string sheetOrder;
             string sheetRange;

@@ -88,11 +88,16 @@ namespace Victor {
             // ATTRIBUTES 
             ostream& output; // output stream
             bool writeSeq, writeSecStr, writeTer;
+	    
             // offsets that determine at which atom,
             // aminoacid and ligand number to start
             unsigned int atomOffset, ligandOffset;
             int aminoOffset;
             char chain; // chain ID
+	    
+	    bool atomGroupPrinted;
+	    
+	    CifStructure* cif;
         };
 
         inline void CifSaver::endFile() {
