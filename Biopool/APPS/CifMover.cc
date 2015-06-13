@@ -71,16 +71,17 @@ int main(int argc, char** argv) {
     // 1. read structure
     // --------------------------------------------------
 
-    Spacer sp;
-
     ifstream inFile(inputFile.c_str());
 
     if (!inFile)
 	ERROR("File does not exist.\n", exception);
-
+    
     CifLoader cl(inFile);
-
-    sp.load(cl);
+    Protein prot;
+    prot.load(cl);
+    unsigned int zero = 0;
+    Spacer sp = *(prot.getSpacer(zero));
+    
     inFile.close();
 
 
@@ -181,10 +182,10 @@ int main(int argc, char** argv) {
     // --------------------------------------------------
 
     ofstream outFile(outputFile.c_str());
-    if (!outFile)
+    if (!outFile) {
 	ERROR("File not found.", exception);
+    }
     CifSaver cs(outFile);
-
     sp.save(cs);
     outFile.close();
 

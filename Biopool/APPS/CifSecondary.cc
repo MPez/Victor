@@ -5,8 +5,18 @@
  * Created on 8 giugno 2015, 12.46
  */
 
+#include <Protein.h>
+#include <Spacer.h>
+#include <Group.h>
+#include <SideChain.h>
+#include <vector3.h>
 #include <CifLoader.h>
 #include <CifSaver.h>
+#include <XyzSaver.h>
+#include <SeqSaver.h>
+#include <IoTools.h>
+#include <IntCoordConverter.h>
+#include <IntSaver.h>
 #include <GetArg.h>
 
 using namespace Victor;

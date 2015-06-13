@@ -5,28 +5,21 @@
  * Created on 12 giugno 2015, 17.42
  */
 
+#include <string>
+#include <GetArg.h>
+#include <Spacer.h>
 #include <CifLoader.h>
 #include <IoTools.h>
-#include <Protein.h>
-#include <GetArg.h>
-#include <SeqSaver.h>
 
 using namespace Victor;
 using namespace Victor::Biopool;
 
 void sShowHelp() {
-    cout << "Cif 2 Seq $Revision: 0.1 $ -- converts a CIF file into SEQ\n"
-	    << "(torsion angles) protein structure backbone torsion angles\n"
-	    << " Options: \n"
-	    << "\t-i <filename> \t Input CIF file\n"
-	    << "\t-o <filename> \t Output to file (default stdout)\n"
-	    << "\t-c <id>       \t Chain identifier to read\n"
-	    << "\t--all         \t All chains\n"
-	    << "\t-m <number>   \t Model number to read (NMR only, default is first model)\n"
-	    << "\t--chi         \t Write Chi angles (default false)\n"
-	    << "\t-v            \t verbose output\n\n"
-	    << "\tIf both -c and --all are missing, only the first chain is processed.\n\n";
-
+    cout << "Pdb 2 Secondary Structure converter\n"
+	    << "\t H = helix, \t E = extended (strand, sheet), \t . = other.\n"
+	    << "   Options: \n"
+	    << "\t-i <filename> \t\t Input file for PDB structure\n"
+	    << "\n";
 }
 
 int main(int argc, char** argv) {
@@ -34,86 +27,77 @@ int main(int argc, char** argv) {
     if (getArg("h", argc, argv)) {
 	sShowHelp();
 	return 1;
-    }
-
-    string inputFile, outputFile, chainID;
-    unsigned int modelNum;
-    bool chi, all;
-
+    };
+    vector<char> allCh;
+    string chainID = "!";
+    string inputFile;
     getArg("i", inputFile, argc, argv, "!");
-    getArg("o", outputFile, argc, argv, "!");
-    getArg("c", chainID, argc, argv, "!");
-    getArg("m", modelNum, argc, argv, 999);
-    all = getArg("-all", argc, argv);
-    chi = getArg("-chi", argc, argv);
 
-    // Check input file
     if (inputFile == "!") {
-	cout << "Missing input file specification. Aborting. (-h for help)" << endl;
+	cout << "Missing file specification. Aborting. (-h for help)" << endl;
 	return -1;
     }
+    
     ifstream inFile(inputFile.c_str());
-    if (!inFile)
-	ERROR("Input file not found.", exception);
-
-
-    CifLoader cl(inFile);
-
-    // Set CifLoader variables
-    cl.setModel(modelNum);
-    cl.setNoHAtoms();
-    cl.setNoHetAtoms();
-    cl.setNoSecondary();
-    if (!getArg("v", argc, argv)) {
-	cl.setNoVerbose();
+    if (!inFile) {
+	ERROR("File not found.", exception);
     }
 
-
-    // Check chain args
-    if ((chainID != "!") && all) {
-	ERROR("You can use --all or -c, not both", error);
+    CifLoader il(inFile);
+    il.setNoHAtoms();
+    allCh = il.getAllChains();
+    
+    for (unsigned int i = 0; i < allCh.size(); i++) {
+	cout << "\t," << allCh[i] << ",";
     }
-    // User selected chain
+    cout << "\n";
+
+    /*check on validity of chain: 
+    if user select a chain then check validity
+     else select first valid one by default*/
     if (chainID != "!") {
-	if (chainID.size() > 1)
-	    ERROR("You can choose only 1 chain", error);
-	cl.setChain(chainID[0]);
-    }// All chains
-    else if (all) {
-	cl.setAllChains();
-    }// First chain
-    else {
-	cl.setChain(cl.getAllChains()[0]);
-    }
-
-    // Load the protein object
-    Protein prot;
-    prot.load(cl);
-
-    // Open the proper output stream (file or stdout)
-    std::ostream* os = &cout;
-    std::ofstream fout;
-    if (outputFile != "!") {
-	fout.open(outputFile.c_str());
-	if (!fout) {
-	    ERROR("Could not open file for writing.", exception);
-	} else {
-	    os = &fout;
+	bool validChain = false;
+	for (unsigned int i = 0; i < allCh.size(); i++) {
+	    if (allCh[i] == chainID[0]) {
+		il.setChain(chainID[0]);
+		cout << "Loading chain " << chainID << "\n";
+		validChain = true;
+		break;
+	    }
 	}
+	if (!validChain) {
+	    cout << "Chain " << chainID << " is not available\n";
+	    return -1;
+	}
+
+    } else {
+	chainID[0] = allCh[0];
+	cout << "Using chain " << chainID << "\n";
     }
+    
+    Protein prot;
+    prot.load(il);
+    Spacer *sp;
+    sp = prot.getSpacer(chainID[0]);
 
-
-    Spacer* sp;
-    for (unsigned int i = 0; i < prot.sizeProtein(); i++) {
-
-	sp = prot.getSpacer(i);
-
-	// Write the sequence
-	SeqSaver ss(*os);
-	if (!chi)
-	    ss.setWriteChi(false);
-	sp->save(ss);
+    allCh = il.getAllChains();
+    cout << ">" << inputFile << "\n";
+    
+    for (unsigned int i = 0; i < sp->sizeAmino(); i++) {
+	switch (sp->getAmino(i).getState()) {
+	    case HELIX:
+		cout << "H";
+		break;
+	    case STRAND:
+		cout << "E";
+		break;
+	    default:
+		cout << ".";
+	};
+	if ((i + 1) % 60 == 0)
+	    cout << "\n";
     }
+    cout << "\n";
 
     return 0;
 }

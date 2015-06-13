@@ -17,15 +17,17 @@ int main(int argc, char** argv) {
                 << "protein structure backbone torsion angles" << endl;
         cout << "  Usage: \t\t CifEditor <input_filename> <output_filename> \n";
         return 1;
-    };
+    }
     
     ifstream inFile(argv[1]);
     if (!inFile)
         ERROR("Input file not found.", exception);
 
     CifLoader cl(inFile);
-    Spacer sp;
-    sp.load(cl);
+    Protein prot;
+    prot.load(cl);
+    unsigned int zero = 0;
+    Spacer sp = *(prot.getSpacer(zero));
 
     cout << "Editing " << argv[1] << " output goes to " << argv[2] << "\n";
 
@@ -36,7 +38,7 @@ int main(int argc, char** argv) {
         if (aaid <= -1) {
             cout << "Bye.\n";
             return 0;
-        };
+        }
 
         if (aaid >= (int) sp.sizeAmino()) {
             cout << "\t Invalid aa#!\n";
@@ -67,7 +69,7 @@ int main(int argc, char** argv) {
             CifSaver pss2(outFile2);
 
             sp.save(pss2);
-        };
+        }
     } while (aaid != -1);
 
     return 0;
