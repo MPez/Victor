@@ -36,13 +36,15 @@ int main(int nArgs, char* argv[]) {
         return 1;
     };
 
-    Spacer sp;
     ifstream inFile(argv[1]);
     if (!inFile)
         ERROR("File not found.", exception);
 
     PdbLoader il(inFile);
-    sp.load(il);
+    Protein prot;
+    prot.load(il);
+    unsigned int zero = 0;
+    Spacer sp = *(prot.getSpacer(zero));
 
     for (unsigned int i = 0; i < sp.sizeAmino(); i++)
         sp.getAmino(i).addMissingO();
