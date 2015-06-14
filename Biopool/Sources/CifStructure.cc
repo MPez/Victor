@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include <IoTools.h>
+#include <Debug.h>
 
 #include "CifStructure.h"
 
@@ -41,6 +42,7 @@ CifStructure::~CifStructure() {
 void CifStructure::initData() {
     header = "_entry.id";
 
+    // atom group
     atom = "_atom_site.";
     atomId = "id ";
     chain = "auth_asym_id ";
@@ -56,12 +58,14 @@ void CifStructure::initData() {
     residueName = "auth_comp_id ";
     atomName = "auth_atom_id ";
     model = "pdbx_PDB_model_num ";
-
+    
+    // helix group
     helix = "_struct_conf.";
     helixStart = "beg_auth_seq_id ";
     helixEnd = "end_auth_seq_id ";
     helixChainId = "beg_auth_asym_id ";
 
+    // sheet group
     sheet = "_struct_sheet.";
     sheetOrder = "_struct_sheet_order.";
     sheetRange = "_struct_sheet_range.";
@@ -70,6 +74,7 @@ void CifStructure::initData() {
     sheetEnd = "end_auth_seq_id ";
     sheetChainId = "beg_auth_asym_id ";
 
+    // flags
     atomGroupParsed = false;
     helixGroupParsed = false;
     sheetGroupParsed = false;
@@ -91,6 +96,8 @@ vector<string>& CifStructure::getGroup(string name) {
 	return sheetRangeGroup;
     } else if (name == "sheet hbond") {
 	return sheetHbondGroup;
+    } else {
+	ERROR("getGroup (CifStructure): invalid group name", exception);
     }
 }
 
@@ -152,6 +159,8 @@ string CifStructure::getTag(string name) {
 	return sheetEnd;
     } else if (name == "sheet chain") {
 	return sheetChainId;
+    } else {
+	ERROR("getTag (CifStructure): invalid tag name", exception);
     }
 }
 
@@ -232,6 +241,8 @@ void CifStructure::setParsedFlag(string name) {
 	sheetOrderGroupParsed = true;
     } else if (name == "sheet range") {
 	sheetRangeGroupParsed = true;
+    } else {
+	ERROR("setParsedFlag (CifStructure): invalid flag name", exception);
     }
 }
 
@@ -248,6 +259,8 @@ bool CifStructure::isGroupParsed(string name) {
 	return sheetOrderGroupParsed;
     } else if (name == "sheet range") {
 	return sheetRangeGroupParsed;
+    } else {
+	ERROR("isGroupParsed (CifStructure): invalid group name", exception);
     }
 }
 
@@ -366,5 +379,7 @@ void CifStructure::printGroup(string name) {
 		"_pdbx_poly_seq_scheme.pdb_strand_id " << endl <<
 		"_pdbx_poly_seq_scheme.pdb_ins_code " << endl <<
 		"_pdbx_poly_seq_scheme.hetero " << endl;
+    } else {
+	ERROR("printGroup (CifStructure): invalid group name", exception);
     }
 }

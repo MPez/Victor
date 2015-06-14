@@ -29,7 +29,7 @@ using namespace std;
 
 CifSaver::CifSaver(ostream& _output) :
 output(_output), writeSeq(true), writeSecStr(true), writeTer(true),
-atomOffset(0), aminoOffset(0), ligandOffset(0), chain(' '), 
+atomOffset(0), aminoOffset(0), ligandOffset(0), chain(' '),
 atomGroupPrinted(false) {
     cif = new CifStructure(_output);
 }
@@ -51,7 +51,7 @@ CifSaver::~CifSaver() {
 void CifSaver::saveGroup(Group& gr) {
     gr.sync();
 
-    if(!atomGroupPrinted) {
+    if (!atomGroupPrinted) {
 	cif->printGroup("atom");
 	atomGroupPrinted = true;
     }
@@ -62,7 +62,7 @@ void CifSaver::saveGroup(Group& gr) {
 	// cosmetics: OXT has to be output after
 	// the sidechain and therefore goes in saveSpacer
 	if (atName == "OXT") {
-	    continue; 
+	    continue;
 	}
 
 	// Added variable for correcting atom type H (last column in PDBs)
@@ -81,31 +81,31 @@ void CifSaver::saveGroup(Group& gr) {
 	while (atName.size() < 4) {
 	    atName += ' ';
 	}
-	
+
 	// if fields have default values (0 or X), assigns the CIF unknown value (?)
 	// or a possibly correct value
 	char asymId = gr[i].getAsymId();
 	string entityId = gr[i].getEntityId();
 	int model = gr[i].getModel();
-	
+
 	if (asymId == 'X') {
 	    asymId = '?';
 	}
-	
+
 	if (entityId == "0") {
 	    entityId = "?";
 	}
-	
+
 	if (model == 0) {
 	    model = 1;
 	}
-	
+
 	output << setw(7) << left << "ATOM" <<
 		setw(6) << gr[i].getNumber() <<
 		setw(2) << atomOneLetter <<
 		setw(5) << left << atName <<
 		setw(2) << "." <<
-		setw(4) << gr.getType() << 
+		setw(4) << gr.getType() <<
 		setw(2) << asymId <<
 		setw(2) << entityId <<
 		setw(4) << aminoOffset <<
@@ -122,7 +122,7 @@ void CifSaver::saveGroup(Group& gr) {
 		setw(2) << "?" <<
 		setw(2) << "?" <<
 		setw(4) << aminoOffset <<
-		setw(4) << gr.getType() << 
+		setw(4) << gr.getType() <<
 		setw(2) << chain <<
 		setw(5) << left << atName <<
 		setw(2) << model <<
@@ -196,34 +196,52 @@ void CifSaver::saveSpacer(Spacer& sp) {
 	// cosmetics: write OXT after last side chain
 	if (sp.getAmino(sp.sizeAmino() - 1).isMember(OXT)) {
 	    unsigned int index = sp.sizeAmino() - 1;
-	    
+
+	    // if fields have default values (0 or X), assigns the CIF unknown value (?)
+	    // or a possibly correct value
+	    char asymId = sp.getAmino(index)[OXT].getAsymId();
+	    string entityId = sp.getAmino(index)[OXT].getEntityId();
+	    int model = sp.getAmino(index)[OXT].getModel();
+
+	    if (asymId == 'X') {
+		asymId = '?';
+	    }
+
+	    if (entityId == "0") {
+		entityId = "?";
+	    }
+
+	    if (model == 0) {
+		model = 1;
+	    }
+
 	    output << setw(7) << left << "ATOM" <<
-		setw(6) << sp.getAmino(index)[OXT].getNumber() <<
-		setw(2) << "O" <<
-		setw(5) << left << "OXT" <<
-		setw(2) << "." <<
-		setw(4) << sp.getAmino(index).getType() << 
-		setw(2) << sp.getAmino(index)[OXT].getAsymId() <<
-		setw(2) << sp.getAmino(index)[OXT].getEntityId() <<
-		setw(4) << aminoOffset <<
-		setw(2) << "?" <<
-		setw(8) << setprecision(3) << sp.getAmino(index)[OXT].getCoords().x <<
-		setw(8) << setprecision(3) << sp.getAmino(index)[OXT].getCoords().y <<
-		setw(8) << setprecision(3) << sp.getAmino(index)[OXT].getCoords().z <<
-		setw(6) << setprecision(2) << sp.getAmino(index)[OXT].getOccupancy() <<
-		setw(7) << left << setprecision(2) << sp.getAmino(index)[OXT].getBFac() <<
-		setw(2) << "?" <<
-		setw(2) << "?" <<
-		setw(2) << "?" <<
-		setw(2) << "?" <<
-		setw(2) << "?" <<
-		setw(2) << "?" <<
-		setw(4) << aminoOffset <<
-		setw(4) << sp.getAmino(index).getType() << 
-		setw(2) << chain <<
-		setw(5) << "OXT" <<
-		setw(2) << sp.getAmino(index)[OXT].getModel() <<
-		endl;
+		    setw(6) << sp.getAmino(index)[OXT].getNumber() <<
+		    setw(2) << "O" <<
+		    setw(5) << left << "OXT" <<
+		    setw(2) << "." <<
+		    setw(4) << sp.getAmino(index).getType() <<
+		    setw(2) << asymId <<
+		    setw(2) << entityId <<
+		    setw(4) << aminoOffset <<
+		    setw(2) << "?" <<
+		    setw(8) << setprecision(3) << sp.getAmino(index)[OXT].getCoords().x <<
+		    setw(8) << setprecision(3) << sp.getAmino(index)[OXT].getCoords().y <<
+		    setw(8) << setprecision(3) << sp.getAmino(index)[OXT].getCoords().z <<
+		    setw(6) << setprecision(2) << sp.getAmino(index)[OXT].getOccupancy() <<
+		    setw(7) << left << setprecision(2) << sp.getAmino(index)[OXT].getBFac() <<
+		    setw(2) << "?" <<
+		    setw(2) << "?" <<
+		    setw(2) << "?" <<
+		    setw(2) << "?" <<
+		    setw(2) << "?" <<
+		    setw(2) << "?" <<
+		    setw(4) << aminoOffset <<
+		    setw(4) << sp.getAmino(index).getType() <<
+		    setw(2) << chain <<
+		    setw(5) << "OXT" <<
+		    setw(2) << model <<
+		    endl;
 	}
 
 	output.precision(oldPrec);
@@ -251,16 +269,33 @@ void CifSaver::saveLigand(Ligand& gr) {
     }
 
     //print all HETATM of a ligand
-    for (unsigned int i = 0; i < gr.size(); i++) 
-    {
+    for (unsigned int i = 0; i < gr.size(); i++) {
 	string atType = gr[i].getType();
 	aaType = gr.getType();
 	string atTypeShort; //last column in a Pdb File
-	
+
 	if (atType != aaType) {
 	    atTypeShort = atType[0];
 	} else {
 	    atTypeShort = atType;
+	}
+
+	// if fields have default values (0 or X), assigns the CIF unknown value (?)
+	// or a possibly correct value
+	char asymId = gr[i].getAsymId();
+	string entityId = gr[i].getEntityId();
+	int model = gr[i].getModel();
+
+	if (asymId == 'X') {
+	    asymId = '?';
+	}
+
+	if (entityId == "0") {
+	    entityId = "?";
+	}
+
+	if (model == 0) {
+	    model = 1;
 	}
 
 	output << setw(7) << left << tag <<
@@ -268,10 +303,10 @@ void CifSaver::saveLigand(Ligand& gr) {
 		setw(2) << atTypeShort <<
 		setw(5) << left << atType <<
 		setw(2) << "." <<
-		setw(4) << aaType << 
-		setw(2) << gr[i].getAsymId() <<
-		setw(2) << gr[i].getEntityId() <<
-		setw(4) << aminoOffset <<
+		setw(4) << aaType <<
+		setw(2) << asymId <<
+		setw(2) << entityId <<
+		setw(4) << ligandOffset <<
 		setw(2) << "?" <<
 		setw(8) << setprecision(3) << gr[i].getCoords().x <<
 		setw(8) << setprecision(3) << gr[i].getCoords().y <<
@@ -285,10 +320,10 @@ void CifSaver::saveLigand(Ligand& gr) {
 		setw(2) << "?" <<
 		setw(2) << "?" <<
 		setw(4) << aminoOffset <<
-		setw(4) << aaType << 
+		setw(4) << aaType <<
 		setw(2) << chain <<
 		setw(5) << atType <<
-		setw(2) << gr[i].getModel() <<
+		setw(2) << model <<
 		endl;
     }
     output << "# " << endl;
@@ -346,9 +381,18 @@ void CifSaver::saveProtein(Protein& prot) {
  */
 void CifSaver::writeSeqRes(Spacer& sp) {
     cif->printGroup("entity poly");
-    
-    for (unsigned int i = 0; i< sp.sizeAmino(); i++) {
-	output << setw(2) << left << sp.getAmino(i).getAtom(0).getEntityId() << 
+
+
+    for (unsigned int i = 0; i < sp.sizeAmino(); i++) {
+	// if fields have default values (0 or X), assigns the CIF unknown value (?)
+	// or a possibly correct value
+	string entityId = sp.getAmino(i).getAtom(0).getEntityId();
+
+	if (entityId == "0") {
+	    entityId = "?";
+	}
+
+	output << setw(2) << left << entityId <<
 		setw(4) << i + 1 <<
 		setw(4) << sp.getAmino(i).getType() <<
 		setw(2) << "n" <<
