@@ -1,8 +1,17 @@
-/* 
- * File:   CifSaver.cc
- * Author: marco
- * 
- * Created on 3 giugno 2015, 23.20
+/*  This file is part of Victor.
+
+    Victor is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Victor is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Victor.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 // Includes:
@@ -73,14 +82,32 @@ void CifSaver::saveGroup(Group& gr) {
 	    atName += ' ';
 	}
 	
+	// if fields have default values (0 or X), assigns the CIF unknown value (?)
+	// or a possibly correct value
+	char asymId = gr[i].getAsymId();
+	string entityId = gr[i].getEntityId();
+	int model = gr[i].getModel();
+	
+	if (asymId == 'X') {
+	    asymId = '?';
+	}
+	
+	if (entityId == "0") {
+	    entityId = "?";
+	}
+	
+	if (model == 0) {
+	    model = 1;
+	}
+	
 	output << setw(7) << left << "ATOM" <<
 		setw(6) << gr[i].getNumber() <<
 		setw(2) << atomOneLetter <<
 		setw(5) << left << atName <<
 		setw(2) << "." <<
 		setw(4) << gr.getType() << 
-		setw(2) << gr[i].getAsymId() <<
-		setw(2) << gr[i].getEntityId() <<
+		setw(2) << asymId <<
+		setw(2) << entityId <<
 		setw(4) << aminoOffset <<
 		setw(2) << "?" <<
 		setw(8) << setprecision(3) << gr[i].getCoords().x <<
@@ -98,7 +125,7 @@ void CifSaver::saveGroup(Group& gr) {
 		setw(4) << gr.getType() << 
 		setw(2) << chain <<
 		setw(5) << left << atName <<
-		setw(2) << gr[i].getModel() <<
+		setw(2) << model <<
 		endl;
 
 	atomOffset = gr[i].getNumber() + 1;

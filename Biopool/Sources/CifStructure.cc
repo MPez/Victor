@@ -1,8 +1,17 @@
-/* 
- * File:   CifStructure.cc
- * Author: marco
- * 
- * Created on 1 giugno 2015, 11.36
+/*  This file is part of Victor.
+
+    Victor is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Victor is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Victor.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <iostream>
@@ -16,35 +25,20 @@ using namespace Victor;
 using namespace Victor::Biopool;
 using namespace std;
 
-/**
- * Constructor
- * @param input input file stream
- * @param output output file stream
- */
 CifStructure::CifStructure(istream& input, ostream& output) :
 input(input), output(output) {
-    setData();
+    initData();
 }
 
-/**
- * Constructor
- * @param output output file stream
- */
 CifStructure::CifStructure(ostream& output) :
 output(output), input(cin) {
-    setData();
+    initData();
 }
 
-/**
- * Destructor
- */
 CifStructure::~CifStructure() {
 }
 
-/**
- * Sets data members
- */
-void CifStructure::setData() {
+void CifStructure::initData() {
     header = "_entry.id";
 
     atom = "_atom_site.";
@@ -84,11 +78,6 @@ void CifStructure::setData() {
     sheetHboundgroupParsed = false;
 }
 
-/**
- * Returns the correct collection by group name
- * @param name name of the CIF group
- * @return reference to the collection
- */
 vector<string>& CifStructure::getGroup(string name) {
     if (name == "atom") {
 	return atomGroup;
@@ -105,11 +94,6 @@ vector<string>& CifStructure::getGroup(string name) {
     }
 }
 
-/**
- * Returns the tag by name
- * @param name name of tag
- * @return CIF tag
- */
 string CifStructure::getTag(string name) {
     if (name == "header") {
 	return header;
@@ -171,12 +155,6 @@ string CifStructure::getTag(string name) {
     }
 }
 
-/**
- * Returns the column number of the field
- * @param name name of the group
- * @param field name of the field
- * @return field column number
- */
 int CifStructure::getGroupColumnNumber(string name, string field) {
     int col = -1;
     vector<string>& group = getGroup(name);
@@ -190,13 +168,6 @@ int CifStructure::getGroupColumnNumber(string name, string field) {
     return col;
 }
 
-/**
- * Returns the field of the line at the columnNum column
- * @param name name of the group
- * @param line line of the CIF
- * @param columnNum number of column
- * @return field at columnNum column
- */
 string CifStructure::getGroupField(string name, string& line, int columnNum) {
     istringstream iss(line);
     vector<string>& group = getGroup(name);
@@ -213,11 +184,6 @@ string CifStructure::getGroupField(string name, string& line, int columnNum) {
     }
 }
 
-/**
- * Returns the field present in the line
- * @param line line of the CIF
- * @return field of the line
- */
 string CifStructure::getInlineField(string& line) {
     istringstream iss(line);
     string tag, field;
@@ -225,10 +191,6 @@ string CifStructure::getInlineField(string& line) {
     return field;
 }
 
-/**
- * Parses group of CIF fields and creates a vector with columns positions
- * @param name name of the group 
- */
 void CifStructure::parseGroup(string name, string& line) {
     bool found = false;
     vector<string>& group = getGroup(name);
@@ -257,10 +219,6 @@ void CifStructure::parseGroup(string name, string& line) {
     }
 }
 
-/**
- * Sets flag of the parsed group
- * @param name name of the group
- */
 void CifStructure::setParsedFlag(string name) {
     if (name == "atom") {
 	atomGroupParsed = true;
@@ -277,11 +235,6 @@ void CifStructure::setParsedFlag(string name) {
     }
 }
 
-/**
- * Return true if the group name is parsed, false otherwise
- * @param name name of the group
- * @return true if group is parsed, false otherwise
- */
 bool CifStructure::isGroupParsed(string name) {
     if (name == "atom") {
 	return atomGroupParsed;
@@ -298,10 +251,6 @@ bool CifStructure::isGroupParsed(string name) {
     }
 }
 
-/**
- * Prints group records names into output stream.
- * @param name name of the group
- */
 void CifStructure::printGroup(string name) {
 
     output << "loop_" << endl;

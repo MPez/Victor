@@ -55,7 +55,7 @@ namespace Victor { namespace Biopool {
         }
 	
 	char getAsymId();
-	int getEntityId();
+	string getEntityId();
 	double getOccupancy();
 	int getModel();
 
@@ -89,7 +89,7 @@ namespace Victor { namespace Biopool {
             Bfac = _b;
         }
 	void setAsymId(char aId);
-	void setEntityId(int eId);
+	void setEntityId(string eId);
 	void setOccupancy(double occ);
 	void setModel(int mod);
 
@@ -128,7 +128,7 @@ namespace Victor { namespace Biopool {
         double Bfac; // B-factor
 	
 	char asymId;
-	int entityId;
+	string entityId;
 	double occupancy;
 	int model;
 
@@ -198,7 +198,7 @@ namespace Victor { namespace Biopool {
 	return asymId;
     }
     
-    inline int Atom::getEntityId() {
+    inline string Atom::getEntityId() {
 	return entityId;
     }
     
@@ -313,7 +313,7 @@ namespace Victor { namespace Biopool {
 	asymId = aId;
     }
     
-    inline void Atom::setEntityId(int eId) {
+    inline void Atom::setEntityId(string eId) {
 	entityId = eId;
     }
     

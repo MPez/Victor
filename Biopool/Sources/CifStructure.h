@@ -1,8 +1,17 @@
-/*
- * File:   CifStructure.h
- * Author: marco
- *
- * Created on 1 giugno 2015, 11.36
+/*  This file is part of Victor.
+
+    Victor is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Victor is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Victor.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef CIFSTRUCTURE_H
@@ -16,6 +25,7 @@
 
 using std::string;
 using std::istream;
+using std::ostream;
 using std::vector;
 
 // Global constants, typedefs, etc. (to avoid):
@@ -24,26 +34,26 @@ namespace Victor {
     namespace Biopool {
 
         /**
-         * Helper class used to hold information from CIF file
+         * @brief Helper class used to hold information from CIF file.
          */
         class CifStructure {
         public:
             /**
-             * Constructor
+             * Constructor.
              * @param input input file stream
 	     * @param output output file stream
              */
             CifStructure(istream& input, ostream& output = cout);
 	    
 	    /**
-	     * Constructor
+	     * Constructor.
              * @param output output file stream
 	     * @param input input file stream
              */
 	    CifStructure(ostream& output);
             
             /**
-             * Destructor
+             * Destructor.
              */
             virtual ~CifStructure();
             
@@ -79,7 +89,7 @@ namespace Victor {
             string getGroupField(string name, string& line, int columnNum);
             
 	    /**
-	     * Returns the field present in the line
+	     * Returns the field present in the CIF line.
              * @param line
              * @return 
              */
@@ -92,13 +102,13 @@ namespace Victor {
             void parseGroup(string group, string& line);
             
             /**
-            * Sets flag of the parsed group
+            * Sets the flag of the parsed group.
             * @param name name of the group
             */
             void setParsedFlag(string name);
             
             /**
-             * Return true if the group name is parsed, false otherwise
+             * Returns true if the group name is parsed, false otherwise.
              * @param name name of the group
              * @return true if group is parsed, false otherwise
              */
@@ -118,9 +128,9 @@ namespace Victor {
             
         private:
 	    /**
-	     * Sets data members
+	     * Initializes data members.
              */
-	    void setData();
+	    void initData();
 	    
             // CIF file
             istream& input;

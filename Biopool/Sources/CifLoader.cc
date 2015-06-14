@@ -1,8 +1,17 @@
-/* 
- * File:   CifLoader.cc
- * Author: marco
- * 
- * Created on 3 giugno 2015, 23.20
+/*  This file is part of Victor.
+
+    Victor is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Victor is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Victor.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 // Includes:
@@ -49,8 +58,6 @@ CifLoader::~CifLoader() {
 /**
  * If user selected a Model, it check validity of this choice,
  * otherwise it select first available chain.
- * @param   void
- * @return  void
  */
 void CifLoader::checkModel() {
     if ((model != 999) && (model > getMaxModels())) {
@@ -61,8 +68,6 @@ void CifLoader::checkModel() {
 /**
  * If user selected a chain, it check validity of this choice,
  * otherwise it select first available chain.
- * @param   void
- * @return  void
  */
 void CifLoader::checkAndSetChain() {
     vector<char> chainList = getAllChains();
@@ -84,7 +89,6 @@ void CifLoader::checkAndSetChain() {
 
 /**
  * Reads in the maximum allowed number of NMR models, zero otherwise.
- * @param void
  */
 unsigned int CifLoader::getMaxModels() {
     input.clear(); // reset file error flags
@@ -248,10 +252,10 @@ CifLoader::loadSpacer(Spacer& sp){
 /**
  * Parse a single line of a CIF file.
  * @param atomLine the whole CIF line as it is
- * @param tag the first field (keyword) in a PDB line
+ * @param tag the first field (keyword) in a CIF line
  * @param lig pointer to a ligan
  * @param aa pointer to an amino acid
- * @return Residue number read from the PDB line.
+ * @return Residue number read from the CIF line.
  */
 int
 CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa) {
@@ -303,8 +307,8 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
 	    cif->getGroupColumnNumber("atom", "atom asym")).c_str()[0];
 
     // get entity id
-    int entityId = stoiDEF(cif->getGroupField("atom", atomLine,
-	    cif->getGroupColumnNumber("atom", "atom entity")));
+    string entityId = cif->getGroupField("atom", atomLine,
+	    cif->getGroupColumnNumber("atom", "atom entity"));
     
     // get occupancy
     double occ = stodDEF(cif->getGroupField("atom", atomLine,
@@ -370,7 +374,7 @@ CifLoader::parseCifline(string atomLine, string tag, Ligand* lig, AminoAcid* aa)
 }
 
 /**
- * Core function for PDB file parsing. 
+ * Core function for CIF file parsing. 
  * @param prot (Protein&)
  */
 void CifLoader::loadProtein(Protein& prot) {

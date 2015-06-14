@@ -34,7 +34,7 @@ using namespace Victor; using namespace Victor::Biopool;
  */
 Atom::Atom(unsigned int mI, unsigned int mO) : SimpleBond(mI, mO),
 superior(NULL), type(X), coords(0, 0, 0), Bfac(0.0), trans(0, 0, 0), rot(1),
-modified(false), asymId('X'), entityId(0), occupancy(0.0), model(0) {
+modified(false), asymId('X'), entityId("0"), occupancy(0.0), model(0) {
     PRINT_NAME;
 }
 
