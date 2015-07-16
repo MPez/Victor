@@ -53,14 +53,18 @@ int main(int argc, char** argv) {
 
     for (unsigned int i = 0; i < sp.sizeAmino(); i++)
         sp.getAmino(i).addMissingO();
+    
+    inFile.close();
 
-    ofstream outFile2(argv[1]);
+    ofstream outFile(argv[1]);
 
-    if (!outFile2)
+    if (!outFile)
         ERROR("Couldn't write file.", exception);
 
-    CifSaver pss2(outFile2);
-    sp.save(pss2);
+    CifSaver pss(outFile);
+    sp.save(pss);
+    
+    outFile.close();
     
     return 0;
 }

@@ -192,6 +192,8 @@ int main(int argc, char** argv) {
     // Load the protein object
     Protein prot;
     prot.load(cl);
+    
+    inFile.close();
 
     // Open the proper output stream (file or stdout)
     std::ostream* os = &cout;
@@ -211,6 +213,8 @@ int main(int argc, char** argv) {
 	sp = prot.getSpacer(i);
 	writeOutput(sp, extendedOutput, ssType, (*os));
     }
+    
+    fout.close();
 
     return 0;
 }

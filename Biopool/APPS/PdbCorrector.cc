@@ -48,6 +48,8 @@ int main(int nArgs, char* argv[]) {
 
     for (unsigned int i = 0; i < sp.sizeAmino(); i++)
         sp.getAmino(i).addMissingO();
+    
+    inFile.close();
 
     ofstream outFile2(argv[1]);
 
@@ -56,6 +58,8 @@ int main(int nArgs, char* argv[]) {
 
     PdbSaver pss2(outFile2);
     sp.save(pss2);
+    
+    outFile2.close();
     
     return 0;
 }

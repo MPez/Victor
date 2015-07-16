@@ -24,10 +24,10 @@ using namespace Victor;
 using namespace Victor::Biopool;
 
 void sShowHelp() {
-    cout << "Pdb 2 Secondary Structure converter\n"
+    cout << "Cif 2 Secondary Structure converter\n"
 	    << "\t H = helix, \t E = extended (strand, sheet), \t . = other.\n"
 	    << "   Options: \n"
-	    << "\t-i <filename> \t\t Input file for PDB structure\n"
+	    << "\t-i <filename> \t\t Input file for CIF structure\n"
 	    << "\n";
 }
 
@@ -91,6 +91,8 @@ int main(int argc, char** argv) {
 
     allCh = il.getAllChains();
     cout << ">" << inputFile << "\n";
+    
+    inFile.close();
     
     for (unsigned int i = 0; i < sp->sizeAmino(); i++) {
 	switch (sp->getAmino(i).getState()) {

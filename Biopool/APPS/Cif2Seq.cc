@@ -98,6 +98,8 @@ int main(int argc, char** argv) {
     // Load the protein object
     Protein prot;
     prot.load(cl);
+    
+    inFile.close();
 
     // Open the proper output stream (file or stdout)
     std::ostream* os = &cout;
@@ -123,6 +125,8 @@ int main(int argc, char** argv) {
             ss.setWriteChi(false);
         sp->save(ss);
     }
+    
+    fout.close();
     
     return 0;
 }

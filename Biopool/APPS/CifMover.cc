@@ -29,7 +29,7 @@ using namespace Victor::Biopool;
 const double LAMBDA = 1.5;
 
 void sShowHelp() {
-    cout << "CIF Shifter\n"
+    cout << "CIF Mover\n"
 	    << "Allows to move all residues in file by fixed offset.\n"
 	    << " Options: \n"
 	    << "\t-i <filename> \t\t Input CIF file\n"
@@ -196,6 +196,7 @@ int main(int argc, char** argv) {
     }
     CifSaver cs(outFile);
     sp.save(cs);
+    
     outFile.close();
 
     return 0;

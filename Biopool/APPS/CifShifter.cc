@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
     getArg("p", offset, argc, argv, 0);
     getArg("n", tmp, argc, argv, 0);
     offset -= tmp;
+    
     getArg("P", offsetAtom, argc, argv, 0);
     getArg("N", tmp, argc, argv, 0);
     offsetAtom -= tmp;

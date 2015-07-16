@@ -63,21 +63,18 @@ int main(int argc, char** argv) {
     // 1. read structure
     // --------------------------------------------------
 
+    ifstream inFile(inputFile.c_str());
+    if (!inFile) {
+	ERROR("File does not exist.\n", exception);
+    }
+    
     if (inputFile.find("pdb") != string::npos) {
-	ifstream inFile(inputFile.c_str());
-	if (!inFile)
-	    ERROR("File does not exist.\n", exception);
-
 	cout << "Loading PDB file..." << endl;
 
 	PdbLoader pl(inFile);
 	prot.load(pl);
 
     } else if (inputFile.find("cif") != string::npos) {
-	ifstream inFile(inputFile.c_str());
-	if (!inFile)
-	    ERROR("File does not exist.\n", exception);
-
 	cout << "Loading CIF file..." << endl;
 
 	CifLoader cl(inFile);
@@ -87,26 +84,25 @@ int main(int argc, char** argv) {
 	cout << "Uknown input file format. Aborting. (-h for help)" << endl;
 	return -2;
     }
+    
+    inFile.close();
 
     // --------------------------------------------------
     // 2. write structure
     // --------------------------------------------------
 
+    ofstream outFile(outputFile.c_str());
+    if (!outFile) {
+	ERROR("File not found.", exception);
+    }
+    
     if (outputFile.find("pdb") != string::npos) {
-	ofstream outFile(outputFile.c_str());
-	if (!outFile)
-	    ERROR("File not found.", exception);
-	
 	cout << "Saving PDB file..." << endl;
 	
 	PdbSaver ps(outFile);
 	prot.save(ps);
 	
     } else if (outputFile.find("cif") != string::npos) {
-	ofstream outFile(outputFile.c_str());
-	if (!outFile)
-	    ERROR("File not found.", exception);
-	
 	cout << "Saving CIF file..." << endl;
 	
 	CifSaver cs(outFile);
@@ -117,6 +113,8 @@ int main(int argc, char** argv) {
 	return -3;
     }
 
+    outFile.close();
+    
     return 0;
 }
 
